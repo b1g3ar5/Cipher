@@ -4,6 +4,8 @@
 module Cipher
     (
 	    ShiftCipher(..)
+	    , cipherCadenus
+	    , decipherCadenus
 	    , Cipher(..)
 	    , caesarCipher
 	    , cipherRailRoad
@@ -49,6 +51,10 @@ module Cipher
 	    , key
         , hillCrib
         , mapi
+        , spin
+        , unSpin
+        , keySort
+        , unKeySort
     ) where
 
 import NumericPrelude
@@ -57,6 +63,7 @@ import MathObj.Matrix as MM hiding (zipWith)
 
 import GHC.Exts (sortWith)
 import Data.Char
+import Data.Ord
 import Data.Monoid
 import Data.Map as M
 import Data.List as L
@@ -98,8 +105,52 @@ class Cipher a where
 data AmscoCipher = AmscoCipher [Int] deriving (Show)
 
 -- | The Cadenus cipher has a keyword. The plain text is written in columns under
--- the key word until the columns are 25 letters long
+-- the key word in batches of 25*length (ie. until the columns are 25 letters long)
+-- The columns are then arranged alphabetically and then the columns are started on
+-- according to the letter for the code of that column (ie. if the letter is e then
+-- the column is rotated to start at the 5th lettr in the column
 data CadenusCipher = CadenusCipher String deriving (Show)
+
+-- The list must be finite otherwise I don't think the ++ works on the end on an infinite list
+spin :: Int -> [a] -> [a]
+spin n xs = (drop n xs) ++ (take n xs)        
+
+-- The list must be finite otherwise I don't think the ++ works on the end on an infinite list
+unSpin :: Int -> [a] -> [a]
+unSpin n xs = spin (length xs - n ) xs
+
+-- Sort the list and key into ascending order and just return the list
+keySort :: Ord s => [s] -> [a] -> [(s, a)]
+keySort ky xs = sortBy (comparing fst) $ zip ky xs
+
+-- Not very efficient...
+unKeySort :: [Int] -> [a] -> [(Int, a)]
+unKeySort ky xs = zipWith (\k t -> (k, snd t)) ky $ keySort (L.map snd $ keySort ky [1..]) xs
+       
+-- The length of the cipher text need to be a multiple of the length of the key *25
+-- so I pad to that with x's.
+cipherCadenus :: [Int] -> String -> String
+cipherCadenus ky pt = concatMap cipherBlock blocksOfPt
+    where
+        n = length pt
+        m = length ky
+        paddedPt = pt ++ (take ((1 + n `div` (m*25))*m*25 - n) $ repeat 'x')
+        blocksOfPt = chunksOf (m*25) paddedPt
+        cipherBlock :: String -> String
+        cipherBlock bpt = concatMap (\t -> spin (fst t) $ snd t) $ keySort ky cols
+            where
+                cols = L.transpose $ chunksOf m bpt
+        
+decipherCadenus ky ct = concatMap decipherBlock blocksOfCt
+    where
+        n = length ct
+        m = length ky
+        blocksOfCt = chunksOf (m*25) ct
+        decipherBlock bct = L.concat $ L.transpose $ L.map (\t -> unSpin (fst t) $ snd t) $ unKeySort ky cols
+            where
+                cols = chunksOf 25 bct
+                
+                
 
 instance Cipher AmscoCipher where
     -- To decipher we need to write the ct back into columns
