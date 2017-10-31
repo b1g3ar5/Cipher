@@ -26,6 +26,7 @@ library
                      , Solve2014
                      , Solve2015
                      , Solve2016
+                     , Solve2017
                      , Tree
                      , Utils
                      , Mod
@@ -43,7 +44,7 @@ library
                      , base64-bytestring
                      , base32-bytestring
                      , base16-bytestring
-                     , hmatrix
+                     --, hmatrix
                      , storable
   default-language:    Haskell2010
 

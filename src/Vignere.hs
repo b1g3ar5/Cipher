@@ -14,7 +14,7 @@ data ShiftCipher = ShiftCipher Char deriving (Show)
 
 instance Cipher ShiftCipher where
     cipher (ShiftCipher a) = map (cShift a)
-    decipher (ShiftCipher a) = map (cShift $ nchr $ nAlphabet- nord a)
+    decipher (ShiftCipher a) = map (cShift $ nchr $ nAlphabet -  nord a)
 
 -- 'D' is equivalent to 3
 caesarCipher = ShiftCipher 'D'

@@ -67,7 +67,7 @@ go nChunks isTail ct crib = L.map (  L.filter (\t->snd t==crib)
 
 get nChunks isTail ct col offSet = concat $ drop offSet $ chunksOf 2 $ (if isTail then tail else id) $ chunksOf (length ct `div` nChunks) ct !! col
 
-ccrib ct isTail i = L.filter (not . null . L.map snd . snd) $ zip [0..] $ Lib.go 5 isTail ct $ L.map (!! i) ["PHASE","EIGHT"]
+ccrib ct isTail i = L.filter (not . L.null . L.map snd . snd) $ zip [0..] $ Lib.go 5 isTail ct $ L.map (!! i) ["PHASE","EIGHT"]
 
 
 ts ct = zip (L.map (ccrib ct True) [0..4]) $ repeat True
@@ -80,7 +80,7 @@ ttable = [[],[(1,30,True),(2,33,True),(2,49,True),(2,97,True)],[(1,121,True),(2,
 
 alltable = L.zipWith (++) ftable ttable
 
-try1 ct alltable coords= L.transpose $ L.zipWith (flip ix) coords $ L.map (L.map (\(c,o,b)-> get 5 b ct c o)) alltable
+try1 ct alltable coords= L.transpose $ L.zipWith (flip (!!)) coords $ L.map (L.map (\(c,o,b)-> get 5 b ct c o)) alltable
 
 allCoords = L.map (\x-> [0,0,0,1,x]) [0..10]
 
@@ -92,7 +92,7 @@ bstringTo32 :: BL.ByteString -> Int
 bstringTo32 = go 0
     where
         go n bs
-              | BL.null b = n
+              | BL.null bs = n
               | BL.length bs > 1 =
                 go (2 * n + if BL.head bs == BSI.c2w '1' then 1 else 0) $
                   BL.tail bs
@@ -100,7 +100,7 @@ bstringTo32 = go 0
 
 
 bchunksOf::Int64 -> BL.ByteString->[BL.ByteString]
-bchunksOf n xs = if BL.null xs then [] else BL.take n xs : bchunksOf n $ BL.drop n xs
+bchunksOf n xs = if BL.null xs then [] else BL.take n xs : bchunksOf n (BL.drop n xs)
 
 
 testPeriodBifid::IO ()
@@ -127,7 +127,7 @@ testBifidCrib = do
     let rs = L.reverse $ sortWith S.size $ consolidate $ r1 ++ r2
     putStrLn $ "Rules are: " ++ show rs
     let gs = grids rs
-    putStrLn $ "Grids are: " ++ show $ take 3 gs
+    putStrLn $ "Grids are: " ++ show (take 3 gs)
 
 
 zeroDic = [ ('A',0),('B',0),('C',0),('D',0),('E',0),('F',0),('G',0),('H',0),('I',0),('J',0),('K',0),('L',0),('M',0),('N',0),('O',0),('P',0),('Q',0),('R',0),('S',0),('T',0),('U',0),('V',0),('W',0),('X',0),('Y',0),('Z',0), (chr 95, 0) ]

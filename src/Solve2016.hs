@@ -19,7 +19,7 @@ module Solve2016
         , solve6B_2016
         , solve7A_2016
         , solve7B_2016
-        , solve8A_2016
+        --, solve8A_2016
         , solve8B_2016
     ) where
 
@@ -39,7 +39,7 @@ import qualified Data.ByteString.Lazy as BS (length, take, drop, readFile)
 import Data.Vector.Unboxed (generate)
 import qualified Data.Vector.Unboxed as V (length)
 import Data.ByteString.Lex.Fractional (readDecimal, readSigned)
-import Numeric.LinearAlgebra hiding (toList)
+--import Numeric.LinearAlgebra hiding (toList)
 import GHC.TypeLits
 import Data.Proxy
 
@@ -69,9 +69,10 @@ main_2016 = do
         solve6B_2016
         solve7A_2016
         solve7B_2016
-        solve8A_2016
+        --solve8A_2016
         solve8B_2016
 
+{-
 hillTest :: IO ()
 hillTest = do
   let pt = "HELLOMATEHOWAREYOU"
@@ -102,6 +103,7 @@ hillTest = do
   putStrLn pt
   putStrLn ct
   putStrLn ppt
+-}
 
 stringTo32 :: String -> Int
 stringTo32 s = go 0 s
@@ -399,7 +401,7 @@ import Quadgram
     --putStrLn $ "Grid " ++ startGrid ++ " scores: " ++ (show sc)
 
     return ()
-
+{-
 solve8A_2016::IO ()
 solve8A_2016 = do
     inCipherText <- readFile "./src/2016/8A.txt"
@@ -436,7 +438,7 @@ solve8A_2016 = do
     -- Whoops, I got the cribs the wrong way round - so cipher not decipher
     let pt = cipher cp ct
     putStrLn pt
-
+-}
 
 count :: (Eq a) => a -> [a] -> Int
 count x = length . filter (==x)

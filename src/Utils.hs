@@ -15,12 +15,12 @@ module Utils
   , reverseTxt
   , ixOfMin
   , ixOfMax
-  , cshift
   , incidences
   , myAbs
   , countFrequencies
   , charDiffs
   , charFreqs
+{-
   , z2i
   , i2z
   , z2int
@@ -31,6 +31,7 @@ module Utils
   , z2mod
   , int2mod
   , mod2int
+-}
 ) where
 
 import Data.Char
@@ -38,9 +39,10 @@ import Data.List as L
 import Data.Array as A
 import Data.String.Utils (split)
 import Data.Maybe
-import Numeric.LinearAlgebra hiding (accum)
+--import Numeric.LinearAlgebra hiding (accum)
 import GHC.TypeLits
 
+{-
 z2i :: Z -> I
 z2i = fromIntegral
 i2z :: I -> Z
@@ -67,6 +69,8 @@ mod2int = fromIntegral
 
 int2mod :: KnownNat n => Int -> (Z ./. n)
 int2mod = fromIntegral
+
+-}
 
 chunksOf::Int->[a]->[[a]]
 chunksOf n [] = []
@@ -137,12 +141,6 @@ ixOfMin xs = fromJust $ elemIndex (minimum xs) xs
 -- Index of the minimum starting with 0
 ixOfMax::Ord a=>[a]->Int
 ixOfMax xs = fromJust $ elemIndex (maximum xs) xs
-
-
--- Shift a character by an int
-cshift::Char->Char->Char
-cshift k ' ' = ' '
-cshift k c = chr $ (ord 'A') + (mod (ord k + ord c - ord 'A' - ord 'A') nAlphabet)
 
 
 incidences :: Char -> String -> [Int]

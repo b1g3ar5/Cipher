@@ -171,7 +171,7 @@ corr::Char->String->Double
 corr c txt = sum $ zipWith (\a b -> (snd a)*(snd b)) cntTxt letterFreq
     where
         shiftedTxt :: String
-        shiftedTxt = L.map (cshift c) txt
+        shiftedTxt = L.map (cShift c) txt
         fs :: Map Char Double
         fs = count2freq $ countChars shiftedTxt
         cntTxt = toAscList fs

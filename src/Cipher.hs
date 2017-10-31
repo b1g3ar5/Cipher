@@ -18,8 +18,8 @@ module Cipher
         , Cipher(..)
         , cipherRailRoad
         , decipherRailRoad
-        , AffineCipher(..)
-        , HillCipher(..)
+        --, AffineCipher(..)
+        --, HillCipher(..)
         , KeyCipher(..)
         , RailRoadCipher(..)
         , PlayfairCipher(..)
@@ -33,7 +33,7 @@ module Cipher
         , derail
         , zipSort
         , key
-        , hillCrib
+        --, hillCrib
         , mapi
         , spin
         , unSpin
@@ -46,8 +46,8 @@ module Cipher
         , solveAmsco
         , decipherOld
         , mightBeEnglish
-        , myInv
-        , mySolve
+        --, myInv
+        --, mySolve
     ) where
 
 -- import NumericPrelude hiding (unzip)
@@ -71,7 +71,7 @@ import Analysis hiding (chunksOf)
 import Cribs
 import Utils
 import Data.Proxy
-import Numeric.LinearAlgebra
+--import Numeric.LinearAlgebra
 
 
 {-
@@ -275,13 +275,13 @@ topTriGrams n ct = fmap fst $ take n $ reverse $ sortWith snd $ M.toList $ count
 -- deriving instance Element (Mod i m)
 
 -- A matix is T in the numeric prelude
-data KnownNat n => HillCipher n = HillCipher (Matrix (Z ./. n)) -- deriving (Show)
-
+--data KnownNat n => HillCipher n = HillCipher (Matrix (Z ./. n)) -- deriving (Show)
+{-
 instance (KnownNat n) => Cipher (HillCipher n) where
     cipher = cipherHill
     decipher (HillCipher m) = cipherHill (HillCipher $ myInv m)
 
-
+-}
 fromInt64ToInt :: Int64 -> Int
 fromInt64ToInt = fromIntegral
 
@@ -289,7 +289,7 @@ fromInt64ToInt = fromIntegral
 fromIntToInt64 :: Int -> Int64
 fromIntToInt64 = fromIntegral
 
-
+{-
 -- Temporary until I work out how to do inverse in NumericPrelude
 cipherHill :: (Integral i, KnownNat n) => HillCipher n -> String -> String
 cipherHill (HillCipher m) ct = L.map (\x-> nchr $ fromIntegral x) $ concat $ Numeric.LinearAlgebra.toLists $ toInt cs
@@ -338,7 +338,7 @@ mySolve a b = [ m | w <- rng, x <- rng, y <- rng, z <- rng, let m = fromZ $ (2><
 
     eye = (2><2) [1::Z ./. n, 0::Z ./. n, 0::Z ./. n, 1::Z ./. n]
 
-
+-}
 
 
 
@@ -346,6 +346,8 @@ mySolve a b = [ m | w <- rng, x <- rng, y <- rng, z <- rng, let m = fromZ $ (2><
 
 getN :: Proxy nAlphabet -> Int
 getN (Proxy) = nAlphabet
+
+{-
 
 -- This works out a 2x2 matrix from a 4 letter crib
 hillCrib:: String -> String -> Matrix (Z ./. 26)
@@ -406,7 +408,7 @@ affineDeshift i j x = nchr $ mod2int $ invi*xj
     invi = 1 / i
     xj = mx - j
 
-
+-}
 
 
 data KeyCipher = KeyCipher KeyMap deriving (Show)

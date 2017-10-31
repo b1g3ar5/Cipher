@@ -17,7 +17,7 @@ module Solve2014
         , solve5A_2014
         , solve5B_2014
         , solve6A_2014
-        , solve6B_2014
+        --, solve6B_2014
         , solve7A_2014
         , solve7B_2014
         , solve8A_2014
@@ -32,7 +32,7 @@ import Data.Map as M (toList)
 import Data.List as L
 import Data.Monoid (mappend)
 import Data.Tuple (swap)
-import Numeric.LinearAlgebra
+--import Numeric.LinearAlgebra
 -- import NumericPrelude
 -- import MathObj.Matrix (fromList)
 
@@ -56,7 +56,7 @@ main_2014 = do
         solve5A_2014
         solve5B_2014
         solve6A_2014
-        solve6B_2014
+        --solve6B_2014
         solve7A_2014
         solve7B_2014
         solve8A_2014
@@ -229,6 +229,7 @@ solve6A_2014 = do
     putStrLn $ "6A: plainText = " ++ pt
     return ()
 
+{-
 solve6B_2014::IO ()
 solve6B_2014 = do
     inCipherText <- readFile "./src/2014/6B.txt"
@@ -254,6 +255,7 @@ solve6B_2014 = do
     -- But c has no inverse because 18 has no inverse wrt 26, so it doesn't
     putStrLn $ "6B: plainText = " ++ pt
     return ()
+-}
 
 solve7A_2014::IO ()
 solve7A_2014 = do

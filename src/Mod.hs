@@ -36,7 +36,7 @@ import Utils
 import Data.Reflection hiding (Z)
 import Data.Proxy
 import Foreign.Storable
-import Numeric.LinearAlgebra
+--import Numeric.LinearAlgebra
 
 
 
