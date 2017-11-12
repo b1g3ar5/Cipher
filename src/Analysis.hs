@@ -21,13 +21,14 @@ module Analysis
     , var
     , mean
     , corr
+    , freqDist
     , isUpperChar
     , countBigrams
-    , countNgrams
+    , countTrigrams
     , chunksOf
     , chunkUsing
     , eqBigramCount
-    , Ngram
+    , Trigram
     , charFreqs
     , englishness
     , wordsOn
@@ -57,38 +58,37 @@ wordsOn p s =  case dropWhile p s of
                             where (w, s'') = break p s'
 
 
--- Measures the difference of the correlation from 1.73 the expected correlation for English
--- The smaller the better
+-- Measures the difference of the correlation from 65 the expected correlation for English
+-- The smaller the better. This is usually for cipher text and the frequencies of cipher
+-- letter are compared to frequencies of letters in English
 englishness :: String -> Double
-englishness pt = (lic-1.73)**2.0
+englishness pt = (lic-65.0)**2.0
   where
     lic = incidenceOfCoincidence $ countChars pt
 
 
 type Bigram = (Char, Char)
 
+type Trigram = (Char, Char, Char)
 
-type Ngram = [Char]
 
-
-eqbg::Bigram->Bool
-eqbg (x,y) = (x==y)
+--type Ngram = String
 
 
 loseZeros::Map a Int -> Map a Int
-loseZeros xs = M.filter (\x-> x>0) xs
+loseZeros = M.filter (>0)
 
 
 var :: Map k Int -> Double
-var xs = (fromIntegral ssq)/(fromIntegral n) - ((fromIntegral s)/(fromIntegral n))**2.0
+var xs = fromIntegral ssq / fromIntegral n - (fromIntegral s / fromIntegral n)**2.0
     where
-        (n, (s, ssq)) = M.foldl' (\acc x -> ( 1 + (fst acc), (x + (fst $ snd acc), x*x + (snd $ snd acc)))) (0, (0, 0)) xs
+        (n, (s, ssq)) = M.foldl' (\acc x -> ( 1 + fst acc, (x + fst (snd acc), x*x + snd (snd acc)))) (0, (0, 0)) xs
 
 
 mean :: Map k Int -> Double
-mean xs = (fromIntegral s)/(fromIntegral n)
+mean xs = fromIntegral s / fromIntegral n
     where
-        (n, s) = M.foldl' (\acc x -> ((fst acc) + 1, x + (snd acc))) (0, 0) xs
+        (n, s) = M.foldl' (\acc x -> (fst acc + 1, x + snd acc)) (0, 0) xs
 
 
 zeroCount::Map Char Int
@@ -96,32 +96,32 @@ zeroCount = fromList $ L.map (\x->(nchr x,0)) [0..25]
 
 
 zeroBigramCount::Map Bigram Int
-zeroBigramCount = fromList $ [((nchr x, nchr y), 0)| x<-[1..25], y<-[1..25]]
+zeroBigramCount = fromList [((nchr x, nchr y), 0)| x<-[1..25], y<-[1..25]]
 
-
-zeroNgramCount::Map Ngram Int
-zeroNgramCount = empty
-
+zeroTrigramCount :: Map Trigram Int
+zeroTrigramCount = fromList [((nchr x, nchr y, nchr z), 0)| x<-[1..25], y<-[1..25], z<-[1..25]]
 
 mInsert :: (Ord b) => Map b Int -> b -> Map b Int
 mInsert xs x = insertWith (+) x 1 xs
 
 
-countChars::String->Map Char Int
-countChars txt = L.foldl' mInsert empty txt
+countChars::(Ord a) =>[a]->Map a Int
+countChars = L.foldl' mInsert empty
 
 -- counts the occurences of each bigram in a string
 -- where n is the distance between the letters
 countBigrams::Int->String->Map Bigram Int
 countBigrams n txt = L.foldl' mInsert zeroBigramCount $ bigrams n txt
 
+
 -- counts the occurences of each bigram in a string
--- where n is the number the letters - currently they must be consecutive
-countNgrams::Int->String->Map Ngram Int
-countNgrams n txt = L.foldl' mInsert zeroNgramCount $ ngrams n txt
+-- where n is the distance between the letters
+countTrigrams::Int->String->Map Trigram Int
+countTrigrams n txt = L.foldl' mInsert zeroTrigramCount $ trigrams n txt
+
 
 eqBigramCount::Map Bigram Int->Int
-eqBigramCount m = M.foldrWithKey (\k x acc -> acc + (if fst k == snd k then x else 0)) 0 m
+eqBigramCount = M.foldrWithKey (\k x acc -> acc + (if fst k == snd k then x else 0)) 0
 
 
 -- Here the p is the distance between the letters of the bigram
@@ -131,8 +131,8 @@ bigrams p txt = [(txt!!ix, txt!!(ix+p)) | ix<-[0..(n-p-1)]]
         n = length txt
 
 -- Here the p is the number of letters in the ngram - which must be consecutive...
-ngrams::Int->String->[Ngram]
-ngrams p txt = [take p $ drop ix txt | ix<-[0..(n-p-1)]]
+trigrams::Int->String->[Trigram]
+trigrams p txt = [(txt!!ix, txt!!(ix+p), txt!!(ix+p+p)) | ix<-[0..(n-p-p-1)]]
     where
         n = length txt
 
@@ -143,38 +143,50 @@ count2freq c = M.map (\v-> fromIntegral v / fromIntegral tot ) c
             tot = M.foldl (+) 0 c
 
 
--- Works out the incidence of coincidence
--- IC = sum{ f_i*(f_i-1)}/N/(N-1)*n
--- where N = length of the text (= sum of the f_i)
--- n = the size of the alphabet
--- f_i = the frequency of letter i
 normalisedIncidenceOfCoincidence::Map Char Int -> Double
-normalisedIncidenceOfCoincidence fs = (M.foldl (\a n -> (fromIntegral $ n*(n-1))+a) (0.0) fs) / (fromIntegral $ totN * (totN - 1)) * fromIntegral nAlphabet
-  where
-    totN = M.foldl' (+) 0 fs
+normalisedIncidenceOfCoincidence fs = (fromIntegral nAlphabet) * incidenceOfCoincidence fs
 
 -- This is the IC from https://bionsgadgets.appspot.com/gadget_forms/acarefstats.html
 -- it's expected to be 63 +- 5 for plain text (ie. 1.73/26*1000)
+-- IC = SUM(freq(x)*(freq(x)-1)) / (L*(L-1))
 incidenceOfCoincidence::Map Char Int -> Double
-incidenceOfCoincidence fs = (normalisedIncidenceOfCoincidence fs) / fromIntegral nAlphabet * 1000.0
+incidenceOfCoincidence fs =  M.foldl (\a n -> fromIntegral (n*(n-1))+a) 0.0 fs / fromIntegral (totN * (totN - 1))
+  where
+    totN = M.foldl' (+) 0 fs
 
 
--- works out the ic of a string split into n pieces (ie. autocorrelation)
+-- works out the average ic over the pieces of a string split into n pieces
+-- So, the chance that the pieces could each be english
 splitIC::Int->String->Double
-splitIC n txt = (sum $ L.map (incidenceOfCoincidence.countChars) spl)/(fromIntegral n)
+splitIC n txt =sum (L.map (incidenceOfCoincidence . countChars) spl) / fromIntegral n * 1000.0
         where
             spl = splitText n txt
 
+
 -- Works out the correlation of an offset of n of a string with standard
--- english text frequencies
-corr::Char->String->Double
-corr c txt = sum $ zipWith (\a b -> (snd a)*(snd b)) cntTxt letterFreq
+-- english text frequencies and compares with the correlation of the frequencies themselves
+-- Close to zero is good.
+corr::String->Double
+corr txt = sum $ zipWith (\a b -> (snd a - snd b)**2 / snd b) cntTxt letterFreq
     where
-        shiftedTxt :: String
-        shiftedTxt = L.map (cShift c) txt
         fs :: Map Char Double
-        fs = count2freq $ countChars shiftedTxt
+        fs = count2freq $ countChars txt
         cntTxt = toAscList fs
+
+
+freqDist :: String -> Double
+freqDist ct = dist freqs $ fromList letterFreq
+  where
+    freqs = count2freq $ countChars ct
+
+
+dist :: Map Char Double -> Map Char Double -> Double
+dist m1 m2 = sqrt $ sum dists
+  where
+    dists = mapWithKey (\k x -> (x - m2 M.! k)**2) m1
+
+
+rms_letterFreq = sqrt $ sum $ fmap (\x -> x*x) [0.08167, 0.01492, 0.02782, 0.04253, 0.12702, 0.02228, 0.02015, 0.06094, 0.06966, 0.00153, 0.00772, 0.04025, 0.02406, 0.06749, 0.07507, 0.01929, 0.00095, 0.05987, 0.06327, 0.09056, 0.02758, 0.00978, 0.02360, 0.00150, 0.01974, 0.00074]
 
 
 -- These are the frequencies of English text by letter

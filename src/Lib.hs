@@ -31,12 +31,14 @@ import Solve2014
 import Solve2015
 import Solve2016
 import Solve2017
+import Test
 
 
 someFunc :: IO ()
 someFunc = do
+  --test
   main_2017
-  putStrLn "someFunc"
+  --putStrLn "someFunc"
 
 
 -- shows n decimal places for a double

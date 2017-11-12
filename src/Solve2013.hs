@@ -33,11 +33,11 @@ import CTexts
 
 -- shows n decimal places for a double
 dshow::Int->Double->String
-dshow n d = printf ("%."++ show n ++"f") d
+dshow n = printf ("%."++ show n ++"f")
 
 -- Switches a->z, b->y etc (when n=26)
 reverseTxt::String->String
-reverseTxt txt = L.map (\c-> chr $ nAlphabet - 1 + 2*65 - ord c) txt
+reverseTxt = L.map (\c-> chr $ nAlphabet - 1 + 2*65 - ord c)
 
 -- just split into bits of size n
 mySplit n = unfoldr $ \xs -> case xs of
@@ -45,102 +45,108 @@ mySplit n = unfoldr $ \xs -> case xs of
      _  -> Just (splitAt n xs)
 
 fromCols::[[a]]->[a]
-fromCols cols = fromCols' [] cols
+fromCols = fromCols' []
 
 fromCols'::[a]->[[a]]->[a]
 fromCols' acc ([]:xs) = acc
-fromCols' acc xss = fromCols' (acc ++ (L.map head xss)) (L.map tail xss)
+fromCols' acc xss = fromCols' (acc ++ L.map head xss) $ L.map tail xss
 
 solve3A_2013::IO ()
 solve3A_2013 = do
-    inCipherText <- readFile "./2013/3A.txt"
+    inCipherText <- readFile "./src/2013/3A.txt"
     let cipherText  = clean isAlpha $ concat $ lines inCipherText
     let fs = toDescList $ fromList $ L.map swap $ toList $ count2freq $ countChars cipherText
-    putStrLn $ "Frequencies are: " ++ (show fs)
-    putStrLn $ "length of cipherText = " ++ (show $ length cipherText)
-    let km = cribMap "HARY" "LODA"
+    --putStrLn $ "Frequencies are: " ++ (show fs)
+    --putStrLn $ "length of cipherText = " ++ (show $ length cipherText)
+    let ptCrib = "HARRYTHISSTRICTLYEYESONLYWHENIHAVETIMEPHILENOUGHHEADACHE"
+    let ctCrib = "LODDARLSKKRDSCRNAQAQKIBNAMLQBSLOFQRSUQPLSNQBIYELLQOJOCLQ"
+    let km = cribMap ptCrib ctCrib
     let km1 = mappend km $ cribMap "ET" $ L.map snd $ take 2 fs
     --let km2 = mappend km1 $ cribMap "ILPXCWNSOUGFVMDBKJ" "SNPTCMBKIYEXFUJVGZ"
     let km2 = mappend km1 $ cribMap "ILP" "SNPZ"
     let pt = apply km2 cipherText
-    putStrLn $ "plainText = " ++ (show $ pt)
+    --putStrLn $ "cpherText = " ++ (show $ cipherText)
+    putStrLn $ "3A = " ++ show pt
     dd<-getDict
     -- let bs = L.map (\l-> isWord dd $ toWord l ) $ getWords pt [5,4,2,8]
     return ()
 
 solve5B_2013::IO ()
 solve5B_2013 = do
-    inCipherText <- readFile "./2013/5B.txt"
+    inCipherText <- readFile "./src/2013/5B.txt"
     let cipherText  = clean isAlpha $ concat $ lines inCipherText
-    let fs = reverse $ sort $ L.map swap $ toList $ count2freq $ countChars cipherText
-    putStrLn $ "Frequencies are: " ++ (show fs)
+    let fs = sortBy (flip compare) $ L.map swap $ toList $ count2freq $ countChars cipherText
+    putStrLn $ "Frequencies are: " ++ show fs
     let pt = decipher (RailRoadCipher 9) cipherText
     -- use get word until true the use it again on the drop etc.
-    putStrLn $ "6B plain text = " ++ (show pt)
+    putStrLn $ "5B = " ++ show pt
 
 solve6A_2013::IO ()
 solve6A_2013 = do
-    inCipherText <- readFile "./2013/6A.txt"
+    inCipherText <- readFile "./src/2013/6A.txt"
     let cipherText  = clean isAlpha $ concat $ lines inCipherText
     let fs = toDescList $ fromList $ L.map swap $ toList $ count2freq $ countChars cipherText
-    putStrLn $ "Frequencies are: " ++ (show fs)
-    putStrLn $ "length of cipherText = " ++ (show $ length cipherText)
+    --putStrLn $ "Frequencies are: " ++ (show fs)
+    --putStrLn $ "length of cipherText = " ++ (show $ length cipherText)
     let km = cribMap "" ""
     let km1 = mappend km $ cribMap "ETA" $ L.map snd $ take 3 fs
     let km2 = mappend km1 $ cribMap "HARRYCDSIPNOGFLMKWBUVZJ" "CPYYLRIZOWUVGHDTNJAEFQM"
     let pt = apply km2 cipherText
-    putStrLn $ "6A plainText = " ++ (show $ pt)
+    putStrLn $ "6A = " ++ show pt
     return ()
+
+
+cleanup x = clean isAlpha $ concat $ lines x
 
 solve7A_2013::IO ()
 solve7A_2013 = do
     let inCipherText = a7_2013
-    let cipherText  = clean isAlpha $ concat $ lines inCipherText
-    let fs = toDescList $ fromList $ L.map swap $ toList $ count2freq $ countChars cipherText
-    let kp = solveVig cipherText
-    putStrLn $ "(key, plainText) = " ++ (show kp)
+    --let cipherText  = cleanup inCipherText
+    --let fs = toDescList $ fromList $ L.map swap $ toList $ count2freq $ countChars cipherText
+    let kp = solveVig $ cleanup inCipherText
+    putStrLn $ "7A (key, plainText) = " ++ show kp
 
 solve8A_2013::IO ()
 solve8A_2013 = do
     let inCipherText = a8_2013
-    let cipherText  = clean isAlpha $ concat $ lines inCipherText
-    let fs = toDescList $ fromList $ L.map swap $ toList $ count2freq $ countChars cipherText
-    let kp = solveVig cipherText
-    putStrLn $ "(key, plainText) = " ++ (show kp)
+    --let cipherText  = cleanup inCipherText
+    -- let fs = toDescList $ fromList $ L.map swap $ toList $ count2freq $ countChars cipherText
+    let kp = solveVig $ cleanup inCipherText
+    putStrLn $ "8A (key, plainText) = " ++ show kp
 
 solve6B_2013::IO ()
 solve6B_2013 = do
-    inCipherText <- readFile "./2013/6B.txt"
+    inCipherText <- readFile "./src/2013/6B.txt"
     let cipherText  = clean isAlpha $ concat $ lines inCipherText
-    let fs = reverse $ sort $ L.map swap $ toList $ count2freq $ countChars cipherText
-    putStrLn $ "Frequencies are: " ++ (show fs)
+    let fs = sortBy (flip compare) $ L.map swap $ toList $ count2freq $ countChars cipherText
+    --putStrLn $ "Frequencies are: " ++ (show fs)
     let pt = decipher (RailRoadCipher 9) cipherText
-    putStrLn $ "6B plain text = " ++ (show pt)
+    putStrLn $ "6B = " ++ show pt
 
 solve7B_2013::IO ()
 solve7B_2013 = do
     let inCipherText  = b7_2013
     let cipherText  = clean isAlpha $ concat $ lines inCipherText
-    let fs = reverse $ sort $ L.map swap $ toList $ count2freq $ countChars cipherText
-    putStrLn $ "Frequencies are: " ++ (show fs)
-    putStrLn $ "ct = " ++ (show cipherText)
-    putStrLn $ "length of ct = " ++ (show $ length cipherText)
+    let fs = sortBy (flip compare) $ L.map swap $ toList $ count2freq $ countChars cipherText
+    --putStrLn $ "Frequencies are: " ++ (show fs)
+    --putStrLn $ "ct = " ++ (show cipherText)
+    --putStrLn $ "length of ct = " ++ (show $ length cipherText)
     let bgs = L.map (\i-> (i, var $ loseZeros $ countBigrams i cipherText)) [645..655]
-    putStrLn $ "bigrams = " ++ (show bgs)
+    --putStrLn $ "bigrams = " ++ (show bgs)
     let bc = BifidCipher "THEORYABCDFGIKLMNPQSUVWXZ"
     let pt = decipher bc cipherText
-    putStrLn $ "pt = " ++ (show pt)
+    putStrLn $ "7B = " ++ show pt
 
 solve8B_2013::IO ()
 solve8B_2013 = do
     let inCipherText  = b8_2013
     let cipherText  = clean isAlpha $ concat $ lines inCipherText
-    let fs = reverse $ sort $ L.map swap $ toList $ count2freq $ countChars cipherText
-    putStrLn $ "Frequencies are: " ++ (show fs)
-    putStrLn $ "ct = " ++ (show cipherText)
-    putStrLn $ "length of ct = " ++ (show $ length cipherText)
+    let fs = sortBy (flip compare) $ L.map swap $ toList $ count2freq $ countChars cipherText
+    --putStrLn $ "Frequencies are: " ++ (show fs)
+    --putStrLn $ "ct = " ++ (show cipherText)
+    --putStrLn $ "length of ct = " ++ (show $ length cipherText)
     let pt = decipher (PlayfairCipher $ key "ADLERBCFGHIKMNOPQSTUVWXYZ") cipherText
-    putStrLn $ "pt = " ++ (show pt)
+    putStrLn $ "8B = " ++ show pt
 
 testPeriodBifid::IO ()
 testPeriodBifid = do
@@ -148,34 +154,35 @@ testPeriodBifid = do
     let cipherText  = clean isAlpha $ concat $ lines inCipherText
     let bs = "THEORYABCDFGIKLMNPQSUVWXZ"
     let pt = decipher (BifidCipher bs) cipherText
-    putStrLn $ "pt = " ++ (show pt)
+    putStrLn $ "pt = " ++ show pt
     let ct = cipher (BifidPeriodCipher 14 bs) pt
-    putStrLn $ "Encoded with PeriodBifid= " ++ (show ct)
+    putStrLn $ "Encoded with PeriodBifid= " ++ show ct
     let bgs = L.map (\i-> (i, var $ loseZeros $ countBigrams i ct)) [1..10]
-    putStrLn $ "bigrams = " ++ (show bgs)
+    putStrLn $ "bigrams = " ++ show bgs
 
 testBifidCrib:: IO ()
 testBifidCrib = do
     let inCipherText  = b8_2013
     let cipherText  = clean isAlpha $ concat $ lines inCipherText
     let n = length cipherText
-    let r1 = applyCrib (Crib (Just 0) (Nothing) "HERRGOERING") cipherText
-    let r2 = applyCrib (Crib (Nothing) (Just $ n-5) "HEILHITLER") cipherText
-    let rs = L.reverse $ sortWith (S.size) $ consolidate $ r1 ++ r2
-    putStrLn $ "Rules are: " ++ (show rs)
+    let r1 = applyCrib (Crib (Just 0) Nothing "HERRGOERING") cipherText
+    let r2 = applyCrib (Crib Nothing (Just $ n-5) "HEILHITLER") cipherText
+    let rs = L.reverse $ sortWith S.size $ consolidate $ r1 ++ r2
+    putStrLn $ "Rules are: " ++ show rs
     let gs = grids rs
-    putStrLn $ "Grids are: " ++ (show $ take 3 gs)
+    putStrLn $ "Grids are: " ++ show (take 3 gs)
 
 
 main_2013 :: IO ()
 main_2013 = do
-        solve3A_2013
-        solve6A_2013
-        solve6B_2013
-        solve7A_2013
-        solve7B_2013
-        solve8A_2013
-        solve8B_2013
+  solve3A_2013
+  solve5B_2013
+  solve6A_2013
+  solve6B_2013
+  solve7A_2013
+  solve7B_2013
+  solve8A_2013
+  solve8B_2013
 
 
 
@@ -242,7 +249,7 @@ trifid2 = [   ('A',"aA0")
 -- Codes up plain text to 3* length of the trifid cipher
 -- Just the fractionation bit
 trifidFractionation::String->String
-trifidFractionation pt = concatMap (\x -> fromJust $ M.lookup x $ fromList trifid2) pt
+trifidFractionation = concatMap (\x -> fromJust $ M.lookup x $ fromList trifid2)
 
 trifidDefractionation::String->String
 trifidDefractionation ct = L.map (\x -> fromJust $ M.lookup x $ fromList $ L.map swap trifid2) $ mySplit 3 ct
@@ -258,7 +265,7 @@ trifidTransposition n ft = fromCols $ mySplit n ft
 trifidDetransposition::Int->String->String
 trifidDetransposition m tt = trifidTransposition n tt
     where
-        n = floor $ (fromIntegral $ length tt) / (fromIntegral m)
+        n = floor $ fromIntegral (length tt) / fromIntegral m
 
 trifidCipher::Int->String->String
 trifidCipher n pt = trifidDefractionation $ trifidTransposition n $ trifidFractionation pt

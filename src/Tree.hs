@@ -216,7 +216,7 @@ subDict chs@(c:cs) (t:ts) = case compare (ch $ lt) c of
 
 getDict::IO (Dict)
 getDict = do
-    ls<-readFile("./Data/Gutenberg2006.txt")
+    ls<-readFile("./src/Data/Gutenberg2006.txt")
     let wds = L.map toWordAndFreq $ lines ls
     let n = length wds
     let t = []::Dict

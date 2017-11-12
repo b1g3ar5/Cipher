@@ -20,6 +20,9 @@ module Utils
   , countFrequencies
   , charDiffs
   , charFreqs
+  , unC
+  , reflect
+  , reflectTxt
 {-
   , z2i
   , i2z
@@ -41,6 +44,7 @@ import Data.String.Utils (split)
 import Data.Maybe
 --import Numeric.LinearAlgebra hiding (accum)
 import GHC.TypeLits
+import Control.Arrow ((&&&))
 
 {-
 z2i :: Z -> I
@@ -51,7 +55,7 @@ i2z = fromIntegral
 z2int :: Z -> Int
 z2int = fromIntegral
 int2z :: Int -> Z
-int2z = fromIntegral
+int2z = fromIntegral1
 
 i2int :: I -> Int
 i2int = fromIntegral
@@ -74,12 +78,12 @@ int2mod = fromIntegral
 
 chunksOf::Int->[a]->[[a]]
 chunksOf n [] = []
-chunksOf n xs = (take n xs):(chunksOf n $ drop n xs)
+chunksOf n xs = take n xs : chunksOf n (drop n xs)
 
 
 chunkUsing::[Int]->[a]->[[a]]
 chunkUsing [] xs = [xs]
-chunkUsing (n:ns) xs = [take n xs] ++ (chunkUsing ns $ drop n xs)
+chunkUsing (n:ns) xs = take n xs : chunkUsing ns (drop n xs)
 
 
 split'::Int->Int->Array Int [a]->[a]->Array Int [a]
@@ -89,19 +93,12 @@ split' i n acc (x:xs) = split' (mod (i+1) n) n (accum (++) acc [(i, [x])]) xs
 
 -- split a list into n bits alternating which bit to put the next item in
 splitText::Int->[a]->[[a]]
-splitText _ [] = []
-splitText 1 xs = [xs]
-splitText n xs = A.elems $ split' 0 n init xs
-            where
-                init::Array Int [a]
-                init = listArray (0,n-1) $ replicate n ([])
+splitText n xs = L.transpose $ chunksOf n xs
 
 
 clean::(Char->Bool)->String->String
 clean _ [] = []
-clean f (x:xs) = case f x of
-                True -> x:(clean f xs)
-                False-> clean f xs
+clean f (x:xs) = if f x then x : clean f xs else clean f xs
 
 
 isUpperChar::Char->Bool
@@ -122,6 +119,14 @@ nord c = ord c - ord 'A'
 nchr::Int->Char
 nchr i = chr $ ord 'A' + i
 
+reflect :: Char -> Char
+reflect c = nchr $ 25 - nord c
+
+
+-- unC is minus c, ie. to work out what you came from with a shift of c
+unC :: Char -> Char
+unC c = nchr $ nAlphabet - nord c
+
 
 -- Shifts right according to an alphabet with nAlphabet Chars
 cShift::Char->Char->Char
@@ -130,7 +135,10 @@ cShift k c = nchr $ mod (nord k + nord c) nAlphabet
 
 -- Switches a->z, b->y etc (when n=26)
 reverseTxt::String->String
-reverseTxt txt = L.map (\c-> chr $ nAlphabet - 1 + 2*65 - ord c) txt
+reverseTxt = L.map (\c-> chr $ nAlphabet - 1 + 2*65 - ord c)
+
+reflectTxt :: String -> String
+reflectTxt = fmap reflect
 
 
 -- Index of the minimum starting with 0
@@ -144,7 +152,7 @@ ixOfMax xs = fromJust $ elemIndex (maximum xs) xs
 
 
 incidences :: Char -> String -> [Int]
-incidences c ct = elemIndices c ct
+incidences = elemIndices
 
 
 myAbs:: Int -> Int
@@ -152,7 +160,7 @@ myAbs x = if x>0 then x else -x
 
 
 countFrequencies:: Ord a => [a]->[(a, Int)]
-countFrequencies xs = L.map (\x-> (head x, length x)) . L.group . L.sort $ xs
+countFrequencies = L.map (head &&& length) . L.group . L.sort
 
 
 charDiffs :: Char -> Char ->String->[Int]

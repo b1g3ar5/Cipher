@@ -1,15 +1,15 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE DataKinds           #-}
-{-# LANGUAGE KindSignatures      #-}
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE FlexibleInstances  #-}
+{-# LANGUAGE KindSignatures #-}
 {-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE TypeOperators       #-}
-{-# LANGUAGE GADTs               #-}
+{-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE GADTs #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE RankNTypes #-}
-
-{-# LANGUAGE RoleAnnotations     #-}
+{-# LANGUAGE RoleAnnotations  #-}
 
 
 module Cipher
@@ -50,8 +50,8 @@ module Cipher
         --, mySolve
     ) where
 
--- import NumericPrelude hiding (unzip)
--- import MathObj.Matrix as MM hiding (zipWith)
+--import NumericPrelude hiding (unzip)
+--import MathObj.Matrix as MM hiding (zipWith)
 
 import GHC.TypeLits
 import GHC.Exts (sortWith)
@@ -71,7 +71,7 @@ import Analysis hiding (chunksOf)
 import Cribs
 import Utils
 import Data.Proxy
---import Numeric.LinearAlgebra
+import Numeric.LinearAlgebra
 
 
 {-
@@ -123,15 +123,15 @@ data AmscoCipher = AmscoCipher Bool [Int] deriving (Show)
 -- The columns are then arranged alphabetically and then the columns are started on
 -- according to the letter for the code of that column (ie. if the letter is e then
 -- the column is rotated to start at the 5th lettr in the column
-data CadenusCipher = CadenusCipher [Int] deriving (Show)
+newtype CadenusCipher = CadenusCipher [Int] deriving (Show)
 
 instance Cipher CadenusCipher where
-    cipher (CadenusCipher ky) pt = cipherCadenus ky pt
-    decipher (CadenusCipher ky) ct = decipherCadenus ky ct
+    cipher (CadenusCipher ky) = cipherCadenus ky
+    decipher (CadenusCipher ky) = decipherCadenus ky
 
 -- The list must be finite otherwise I don't think the ++ works on the end on an infinite list
 spin :: Int -> [a] -> [a]
-spin n xs = (drop n xs) ++ (take n xs)
+spin n xs = drop n xs ++ take n xs
 
 -- The list must be finite otherwise I don't think the ++ works on the end on an infinite list
 unSpin :: Int -> [a] -> [a]
@@ -152,7 +152,7 @@ cipherCadenus ky pt = concatMap cipherBlock blocksOfPt
     where
         n = length pt
         m = length ky
-        paddedPt = pt ++ (take (((if ((rem n m) > 0) then 1 else 0) + n `div` (m*25))*m*25 - n) $ repeat 'x')
+        paddedPt = pt ++ replicate (((if rem n m > 0 then 1 else 0) + n `div` (m*25))*m*25 - n) 'x'
         blocksOfPt = chunksOf (m*25) paddedPt
         cipherBlock :: String -> String
         cipherBlock bpt = L.concat $ L.transpose $ L.map (\t -> unSpin (fst t) $ snd t) $ keySort ky $ cols bpt
@@ -261,27 +261,28 @@ solveAmsco is21 n ct = L.filter (\(pt, code) -> mightBeEnglish pt) pts
 
 -- This function just woks out the trigrams and checks that "THE" and "AND" are in the top 4
 mightBeEnglish :: String -> Bool
-mightBeEnglish pt = (elem "THE" top4) && (elem "AND" top4)
+mightBeEnglish pt = (elem ('T', 'H', 'E') top4) && (elem ('A', 'N', 'D') top4)
     where
         top4 = topTriGrams 10 pt
 
-topTriGrams n ct = fmap fst $ take n $ reverse $ sortWith snd $ M.toList $ count2freq $ loseZeros $ countNgrams 3 ct
+topTriGrams n ct = fmap fst $ take n $ reverse $ sortWith snd $ M.toList $ count2freq $ loseZeros $ countTrigrams 3 ct
 
 --NumericPrelude.filter (\(i,x)-> x=="THE") $ zip [0..] $ fmap (\code -> head $ topTriGrams 1 $ decipher (AmscoCipher True code) ct) $ permutations [0,1,2,3,4,5]
 
 --codes = fmap (\t-> (permutations [0,1,2,3,4,5])!!(fst t)) $ NumericPrelude.filter (\(i,x)-> x=="THE") $ zip [0..] $ fmap (\code -> head $ topTriGrams 1 $ decipher (AmscoCipher True code) ct) $ permutations [0,1,2,3,4,5]
 
--- deriving instance Storable (Mod i m)
--- deriving instance Element (Mod i m)
+--deriving instance Storable (Mod i m)
+--deriving instance Element (Mod i m)
 
 -- A matix is T in the numeric prelude
---data KnownNat n => HillCipher n = HillCipher (Matrix (Z ./. n)) -- deriving (Show)
+data KnownNat n => HillCipher n = HillCipher (Matrix (Z ./. n)) -- deriving (Show)
+
 {-
 instance (KnownNat n) => Cipher (HillCipher n) where
     cipher = cipherHill
     decipher (HillCipher m) = cipherHill (HillCipher $ myInv m)
-
 -}
+
 fromInt64ToInt :: Int64 -> Int
 fromInt64ToInt = fromIntegral
 
@@ -305,7 +306,7 @@ cipherHill (HillCipher m) ct = L.map (\x-> nchr $ fromIntegral x) $ concat $ Num
       ws = fromZ wsInt
       -- Calculate the cipher text
       cs = ws <> m
-
+-}
 
 -- Not it is assumed that its a 2*2 matrix!!!
 myInv :: forall n. KnownNat n => Matrix (Z ./. n) -> Matrix (Z ./. n)
@@ -338,7 +339,6 @@ mySolve a b = [ m | w <- rng, x <- rng, y <- rng, z <- rng, let m = fromZ $ (2><
 
     eye = (2><2) [1::Z ./. n, 0::Z ./. n, 0::Z ./. n, 1::Z ./. n]
 
--}
 
 
 
@@ -347,8 +347,8 @@ mySolve a b = [ m | w <- rng, x <- rng, y <- rng, z <- rng, let m = fromZ $ (2><
 getN :: Proxy nAlphabet -> Int
 getN (Proxy) = nAlphabet
 
-{-
 
+{-
 -- This works out a 2x2 matrix from a 4 letter crib
 hillCrib:: String -> String -> Matrix (Z ./. 26)
 hillCrib ct pt = key
@@ -380,14 +380,15 @@ hillCrib ct pt = key
         mct = fromInt ((2><2) $ fmap int2i nct) :: Matrix (Z ./. 26)
 
         key = luSolve' (luPacked' mpt) mct
-
+-}
 
 data AffineCipher n = AffineCipher (Z ./. n) (Z ./. n) deriving (Show)
-
+{-
 -- a must be coprime with nAlphabet ie a = 1,3,5,7,9,11,15,17,19,21,23,25
 instance KnownNat n => Cipher (AffineCipher n) where
     cipher (AffineCipher a b) =  L.map (affineShift a b)
     decipher (AffineCipher a b) = L.map (affineDeshift a b)
+
 
 affineShift::KnownNat n => Z ./. n -> Z ./. n-> Char -> Char
 affineShift a b x = nchr $ mod2int $ a*nx + b
@@ -411,18 +412,18 @@ affineDeshift i j x = nchr $ mod2int $ invi*xj
 -}
 
 
-data KeyCipher = KeyCipher KeyMap deriving (Show)
+data KeyCipher a = KeyCipher (KeyMap a) deriving (Show)
 
 -- (De)ciphers to * if the letter isn't included
 -- This means that zeoMap can just be empty
-instance Cipher KeyCipher where
+instance Cipher (KeyCipher Char) where
     cipher (KeyCipher (KeyMap a)) = L.map (\c-> findWithDefault '*' c a)
     decipher (KeyCipher (KeyMap a)) = L.map (\c-> findWithDefault '*' c ra)
         where
             ra = M.fromList $ L.map (\x-> (snd x, fst x)) $ M.toList a
 
 
-instance Monoid KeyCipher  where
+instance Ord a => Monoid (KeyCipher a)  where
     mempty = KeyCipher zeroMap
     mappend (KeyCipher k) (KeyCipher l) = KeyCipher $ k `mappend` l
 

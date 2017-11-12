@@ -55,18 +55,18 @@ import System.IO.Unsafe (unsafePerformIO)
 
 main_2016 :: IO ()
 main_2016 = do
-        solve1A_2016
-        solve1B_2016
-        solve2A_2016
-        solve2B_2016
-        solve3A_2016
-        solve3B_2016
-        solve4A_2016
-        solve4B_2016
-        solve5A_2016
-        solve5B_2016
-        solve6A_2016
-        solve6B_2016
+        --solve1A_2016
+        --solve1B_2016
+        --solve2A_2016
+        --solve2B_2016
+        --solve3A_2016
+        --solve3B_2016
+        --solve4A_2016
+        --solve4B_2016
+        --solve5A_2016
+        --solve5B_2016
+        --solve6A_2016
+        --solve6B_2016
         solve7A_2016
         solve7B_2016
         --solve8A_2016
@@ -106,10 +106,10 @@ hillTest = do
 -}
 
 stringTo32 :: String -> Int
-stringTo32 s = go 0 s
+stringTo32 = go 0
     where
         go n [] = n
-        go n (x:[]) = 2*n + if x == '1' then 1 else 0
+        go n [x] = 2*n + if x == '1' then 1 else 0
         go n (x:xs) = go (2*n + if x == '1' then 1 else 0) xs
 
 
@@ -117,45 +117,38 @@ solve1A_2016::IO ()
 solve1A_2016 = do
     inCipherText <- readFile "./src/2016/1A.txt"
     let cipherText  = clean isAlpha $ concat $ lines inCipherText
-    let pt = solveVig cipherText
-    putStrLn $ "1A pt = " ++ (show $ pt)
+    let pt = solveShift cipherText
+    putStrLn $ "1A pt = " ++ show pt
     return ()
 
 solve1B_2016::IO ()
 solve1B_2016 = do
     inCipherText <- readFile "./src/2016/1B.txt"
     let cipherText  = clean isAlpha $ concat $ lines inCipherText
-    let fs = reverse $ sort $ map swap $ toList $ count2freq $ countChars cipherText
-    putStrLn $ "Frequencies are: " ++ (show fs)
-    let pt = solveVig cipherText
-    putStrLn $ "1B: pt = " ++ (show $ fmap reverse pt)
+    let pt = solveShift cipherText
+    putStrLn $ "1B: pt = " ++ show pt
     return ()
 
 solve2A_2016::IO ()
 solve2A_2016 = do
     inCipherText <- readFile "./src/2016/2A.txt"
     let cipherText  = clean isAlpha $ concat $ lines inCipherText
-    let fs = reverse $ sort $ map swap $ toList $ count2freq $ countChars cipherText
-    putStrLn $ "Frequencies are: " ++ (show fs)
-    let pt = solveVig cipherText
-    putStrLn $ "2A: pt = " ++ (show $ pt)
+    let pt = solveShift cipherText
+    putStrLn $ "2A: pt = " ++ show pt
     return ()
 
 solve2B_2016::IO ()
 solve2B_2016 = do
     inCipherText <- readFile "./src/2016/2B.txt"
     let cipherText  = clean isAlpha $ concat $ lines inCipherText
-    putStrLn $ "cipherText = " ++ cipherText
-    let fs = reverse $ sort $ map swap $ toList $ count2freq $ countChars cipherText
-    putStrLn $ "Frequencies are: " ++ (show fs)
 
     let km = cribMap "" ""
     let pCrib = "ETIOAHNKWSRQUMFDPYLXGVCB"
     let cCrib = "FCZDLUYJRXSNHTKAIBOWPMVQ"
-    putStrLn $ show $ sortBy (comparing $ snd) $ zip pCrib cCrib
-    let km1 = km `mappend` (cribMap pCrib cCrib)
+    -- putStrLn $ show $ sortBy (comparing $ snd) $ zip pCrib cCrib
+    let km1 = km `mappend` cribMap pCrib cCrib
     let pt2 = apply km1 cipherText
-    putStrLn $ "2B: pt = " ++ (show $ pt2)
+    putStrLn $ "2B: pt = " ++ show pt2
 
     return ()
 
@@ -163,100 +156,97 @@ solve3A_2016::IO ()
 solve3A_2016 = do
     inCipherText <- readFile "./src/2016/3A.txt"
     let ct  = clean isAlpha $ concat $ lines inCipherText
-    let fs = reverse $ sort $ map swap $ toList $ count2freq $ countChars ct
-    putStrLn $ "Frequencies are: " ++ (show fs)
-    putStrLn $ "3A: cipherText = " ++ (show $ ct)
+    --let fs = reverse $ sort $ map swap $ toList $ count2freq $ countChars ct
+    --putStrLn $ "Frequencies are: " ++ (show fs)
+    --putStrLn $ "3A: cipherText = " ++ (show $ ct)
     let km = cribMap "" ""
     let pCrib = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
     let cCrib = "WESTONXYZABCDFGHIJKLMPQRUV"
-    putStrLn $ show $ sortBy (comparing $ fst) $ zip pCrib cCrib
-    let km1 = km `mappend` (cribMap pCrib cCrib)
+    --putStrLn $ show $ sortBy (comparing $ fst) $ zip pCrib cCrib
+    let km1 = km `mappend` cribMap pCrib cCrib
     let pt2 = apply km1 ct
-    putStrLn $ "3A: pt = " ++ (show $ pt2)
+    putStrLn $ "3A: pt = " ++ show pt2
     return ()
 
 solve3B_2016::IO ()
 solve3B_2016 = do
     inCipherText <- readFile "./src/2016/3B.txt"
     let ct  = clean isAlpha $ concat $ lines inCipherText
-    let fs = reverse $ sort $ map swap $ toList $ count2freq $ countChars ct
-    putStrLn $ "Frequencies are: " ++ (show fs)
-    let topBigrams = take 6 $ reverse $ sortWith snd $ toList $ count2freq $ loseZeros $ countBigrams 1 ct
-    putStrLn $ "Top bigrams are: " ++ (show topBigrams)
-    let top3grams = take 6 $ reverse $ sortWith snd $ toList $ count2freq $ loseZeros $ countNgrams 3 ct
-    putStrLn $ "Top 3grams are: " ++ (show top3grams)
-    putStrLn $ "3B: cipherText = " ++ (show $ ct)
+    --let fs = reverse $ sort $ map swap $ toList $ count2freq $ countChars ct
+    --putStrLn $ "Frequencies are: " ++ (show fs)
+    --let topBigrams = take 6 $ reverse $ sortWith snd $ toList $ count2freq $ loseZeros $ countBigrams 1 ct
+    --putStrLn $ "Top bigrams are: " ++ (show topBigrams)
+    --let top3grams = take 6 $ reverse $ sortWith snd $ toList $ count2freq $ loseZeros $ countNgrams 3 ct
+    --putStrLn $ "Top 3grams are: " ++ (show top3grams)
+    --putStrLn $ "3B: cipherText = " ++ (show $ ct)
     let pCrib = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
     let cCrib = "NEURALVWXYZBCDFGHIJKMOPQST"
-    let km = cribMap "" ""
-    let km1 = km `mappend` (cribMap pCrib cCrib)
+    let km1 = zeroMap `mappend` cribMap pCrib cCrib
     let pt = apply km1 ct
-    putStrLn $ "3B: pt = " ++ (show $ pt)
+    putStrLn $ "3B: pt = " ++ show pt
     return ()
 
 solve4A_2016::IO ()
 solve4A_2016 = do
     inCipherText <- readFile "./src/2016/4A.txt"
     let ct  = clean isAlpha $ concat $ lines inCipherText
-    putStrLn $ "cipherText = " ++ ct
-    let fs = reverse $ sort $ map swap $ toList $ count2freq $ countChars ct
-    putStrLn $ "Frequencies are: " ++ (show fs)
-    let topBigrams = take 6 $ reverse $ sortWith snd $ toList $ count2freq $ loseZeros $ countBigrams 1 ct
-    putStrLn $ "Top bigrams are: " ++ (show topBigrams)
-    let top3grams = take 6 $ reverse $ sortWith snd $ toList $ count2freq $ loseZeros $ countNgrams 3 ct
-    putStrLn $ "Top 3grams are: " ++ (show top3grams)
+    --putStrLn $ "cipherText = " ++ ct
+    --let fs = reverse $ sort $ map swap $ toList $ count2freq $ countChars ct
+    --putStrLn $ "Frequencies are: " ++ (show fs)
+    --let topBigrams = take 6 $ reverse $ sortWith snd $ toList $ count2freq $ loseZeros $ countBigrams 1 ct
+    --putStrLn $ "Top bigrams are: " ++ (show topBigrams)
+    --let top3grams = take 6 $ reverse $ sortWith snd $ toList $ count2freq $ loseZeros $ countNgrams 3 ct
+    --putStrLn $ "Top 3grams are: " ++ (show top3grams)
 
     let pCrib = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
     let cCrib = "WAVEFORMXYZBCDGHIJKLNPQSTU"
-    let km = cribMap "" ""
-    let km1 = km `mappend` (cribMap pCrib cCrib)
+    let km1 = zeroMap `mappend` cribMap pCrib cCrib
     let pt = apply km1 ct
-    putStrLn $ "4A: pt = " ++ (show $ pt)
+    putStrLn $ "4A: pt = " ++ show pt
     return ()
 
 solve4B_2016::IO ()
 solve4B_2016 = do
     inCipherText <- readFile "./src/2016/4B.txt"
     let ct  = clean isAlpha $ concat $ lines inCipherText
-    putStrLn $ "cipherText = " ++ ct
-    putStrLn $ "The cipher text is " ++ show (length ct) ++ " charcters long"
-    let fs = reverse $ sort $ map swap $ toList $ count2freq $ countChars ct
-    putStrLn $ "Frequencies are: " ++ (show $ take 26 fs)
-    let topBigrams = take 6 $ reverse $ sortWith snd $ toList $ count2freq $ loseZeros $ countBigrams 1 ct
-    putStrLn $ "Top bigrams are: " ++ (show topBigrams)
-    let top3grams = take 6 $ reverse $ sortWith snd $ toList $ count2freq $ loseZeros $ countNgrams 3 ct
-    putStrLn $ "Top 3grams are: " ++ (show top3grams)
-    putStrLn $ "This analysis shows it's a transcription cipher. The letter frequencies are good, but the"
-    putStrLn $ "trigrams are not"
+    --putStrLn $ "cipherText = " ++ ct
+    --putStrLn $ "The cipher text is " ++ show (length ct) ++ " charcters long"
+    --let fs = reverse $ sort $ map swap $ toList $ count2freq $ countChars ct
+    --putStrLn $ "Frequencies are: " ++ (show $ take 26 fs)
+    --let topBigrams = take 6 $ reverse $ sortWith snd $ toList $ count2freq $ loseZeros $ countBigrams 1 ct
+    --putStrLn $ "Top bigrams are: " ++ (show topBigrams)
+    --let top3grams = take 6 $ reverse $ sortWith snd $ toList $ count2freq $ loseZeros $ countNgrams 3 ct
+    --putStrLn $ "Top 3grams are: " ++ (show top3grams)
+    --putStrLn $ "This analysis shows it's a transcription cipher. The letter frequencies are good, but the"
+    --putStrLn $ "trigrams are not"
 
     let pt = concatMap (\c -> [c!!2, c!!3, c!!1, c!!0, c!!4]) $ chunksOf 5 $ reverse ct
-    putStrLn $ "4B: pt = " ++ (show $ pt)
+    putStrLn $ "4B: pt = " ++ show pt
 
     return ()
 
 
-topTriGrams :: Int -> String -> [Ngram]
-topTriGrams n pt = fmap fst $ take n $ reverse $ sortWith snd $ toList $ count2freq $ loseZeros $ countNgrams 3 pt
+topTriGrams :: Int -> String -> [Trigram]
+topTriGrams n pt = fmap fst $ take n $ reverse $ sortWith snd $ toList $ count2freq $ loseZeros $ countTrigrams 3 pt
 
 
 solve5A_2016::IO ()
 solve5A_2016 = do
     inCipherText <- readFile "./src/2016/5A.txt"
     let ct  = clean isAlpha $ concat $ lines inCipherText
-    putStrLn $ "============================================================================="
-    putStrLn $ "cipherText = " ++ ct
-    let fs = reverse $ sort $ map swap $ toList $ count2freq $ countChars ct
-    putStrLn $ "Frequencies are: " ++ (show fs)
-    let topBigrams = take 6 $ reverse $ sortWith snd $ toList $ count2freq $ loseZeros $ countBigrams 1 ct
-    putStrLn $ "Top bigrams are: " ++ (show topBigrams)
-    let top3grams = take 6 $ reverse $ sortWith snd $ toList $ count2freq $ loseZeros $ countNgrams 3 ct
-    putStrLn $ "Top 3grams are: " ++ (show top3grams)
+    --putStrLn $ "============================================================================="
+    --putStrLn $ "cipherText = " ++ ct
+    --let fs = reverse $ sort $ map swap $ toList $ count2freq $ countChars ct
+    --putStrLn $ "Frequencies are: " ++ (show fs)
+    --let topBigrams = take 6 $ reverse $ sortWith snd $ toList $ count2freq $ loseZeros $ countBigrams 1 ct
+    --putStrLn $ "Top bigrams are: " ++ (show topBigrams)
+    --let top3grams = take 6 $ reverse $ sortWith snd $ toList $ count2freq $ loseZeros $ countNgrams 3 ct
+    --putStrLn $ "Top 3grams are: " ++ (show top3grams)
     let pCrib = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
     let cCrib = "CHARLIESTUVWXYZBDFGJKMNOPQ"
-    let km = cribMap "" ""
-    let km1 = km `mappend` (cribMap pCrib cCrib)
+    let km1 = zeroMap `mappend` cribMap pCrib cCrib
     let pt = apply km1 ct
-    putStrLn $ "5A: pt = " ++ (show $ pt)
+    putStrLn $ "5A: pt = " ++ show pt
     return ()
 
 
@@ -270,7 +260,7 @@ solve5B_2016 = do
     --putStrLn $ "Frequencies are: " ++ (show fs)
     let topBigrams = take 6 $ reverse $ sortWith snd $ toList $ count2freq $ loseZeros $ countBigrams 1 ct
     --putStrLn $ "Top bigrams are: " ++ (show topBigrams)
-    let top3grams = take 6 $ reverse $ sortWith snd $ toList $ count2freq $ loseZeros $ countNgrams 3 ct
+    let top3grams = take 6 $ reverse $ sortWith snd $ toList $ count2freq $ loseZeros $ countTrigrams 3 ct
     --putStrLn $ "Top 3grams are: " ++ (show top3grams)
     -- So it's a transposition cipher.
     -- Lets look at the difference frequencies for dynamix
@@ -290,14 +280,14 @@ solve6A_2016 = do
     let ct  = clean isAlpha $ concat $ lines inCipherText
     --putStrLn $ "============================================================================="
     --putStrLn $ "cipherText = " ++ ct
-    let fs = reverse $ sort $ map swap $ toList $ count2freq $ countChars ct
+    let fs = sortBy (flip compare) $ map swap $ toList $ count2freq $ countChars ct
     --putStrLn $ "Frequencies are: " ++ (show fs)
     let topBigrams = take 6 $ reverse $ sortWith snd $ toList $ count2freq $ loseZeros $ countBigrams 1 ct
     --putStrLn $ "Top bigrams are: " ++ (show topBigrams)
-    let top3grams = take 6 $ reverse $ sortWith snd $ toList $ count2freq $ loseZeros $ countNgrams 3 ct
+    let top3grams = take 6 $ reverse $ sortWith snd $ toList $ count2freq $ loseZeros $ countTrigrams 3 ct
     --putStrLn $ "Top 3grams are: " ++ (show top3grams)
     let pt = solveVig ct
-    putStrLn $ "6A: plainText = " ++ (snd pt)
+    putStrLn $ "6A: plainText = " ++ show pt
     return ()
 
 solve6B_2016::IO ()
@@ -322,48 +312,27 @@ solve7A_2016 = do
     --putStrLn $ "7A: Frequencies are: " ++ (show ctFreqs)
     let ctTopBigrams = take 6 $ reverse $ sortWith snd $ toList $ count2freq $ loseZeros $ countBigrams 1 ct
     --putStrLn $ "7A: Top bigrams are: " ++ (show ctTopBigrams)
-    let ctTop3grams = take 6 $ reverse $ sortWith snd $ toList $ count2freq $ loseZeros $ countNgrams 3 ct
+    let ctTop3grams = take 6 $ reverse $ sortWith snd $ toList $ count2freq $ loseZeros $ countTrigrams 3 ct
     --putStrLn $ "7A: Top 3grams are: " ++ (show ctTop3grams)
     let pt = solveVig ct
     let ptFreqs = reverse $ sort $ map swap $ toList $ count2freq $ countChars $ snd pt
     --putStrLn $ "7A: Frequencies are: " ++ (show ptFreqs)
     let ptTopBigrams = take 6 $ reverse $ sortWith snd $ toList $ count2freq $ loseZeros $ countBigrams 1 $ snd pt
     --putStrLn $ "7A: Top bigrams are: " ++ (show ptTopBigrams)
-    let ptTop3grams = take 6 $ reverse $ sortWith snd $ toList $ loseZeros $ countNgrams 3 $ snd pt
+    let ptTop3grams = take 6 $ reverse $ sortWith snd $ toList $ loseZeros $ countTrigrams 3 $ snd pt
     --putStrLn $ "7A: Top 3grams are: " ++ (show ptTop3grams)
     putStrLn $ "7A: plainText = " ++ (show $ (fst pt, reverse $ snd pt))
     return ()
 
 solve7B_2016::IO ()
 solve7B_2016 = do
-    -- This is an AMSCO cipher
-    -- It was cracked by trying all the keys (key length known to be 6
-    -- with a [1,2] and a [2,1] start. The resulting plain texts with "THE" as the
-    -- most common trigram were filtered out and inspected. Only one of them was proper text
-{-
-import GHC.Exts (sortWith)
-import Data.Char (isAlpha)
-import Data.Map (toList)
-import Data.List as L
-import qualified Data.Set as S (size)
-import Data.Tuple (swap)
-import Numeric (showFFloat)
-import Quadgram
--}
-
     inCipherText <- readFile "./src/2016/7B.txt"
     let ct  = clean isAlpha $ concat $ lines inCipherText
     let (pt, code) = head $ solveAmsco False 6 ct
-    --putStrLn $ "============================================================================="
-    --putStrLn $ "7B: cipherText = " ++ ct
-    --putStrLn $ "7B: length of ct is " ++ (show $ length ct)
-    let ctFreqs = reverse $ sort $ map swap $ toList $ count2freq $ countChars ct
-    --putStrLn $ "7B: ct frequencies are: " ++ (show $ map (\t -> (snd t, showFFloat (Just 3) (fst t) "")) ctFreqs)
+    let ctFreqs = sortBy (flip compare) $ map swap $ toList $ count2freq $ countChars ct
     let ctTopBigrams = take 6 $ reverse $ sortWith snd $ toList $ count2freq $ loseZeros $ countBigrams 1 ct
-    --putStrLn $ "7B: ct top bigrams are: " ++ (show ctTopBigrams)
-    let ctTop3grams = take 6 $ reverse $ sortWith snd $ toList $ count2freq $ loseZeros $ countNgrams 3 ct
-    --putStrLn $ "7B: ct top 3grams are: " ++ (show ctTop3grams)
-    let bgs = map (\n-> countBigrams n ct) [1..20]
+    let ctTop3grams = take 6 $ reverse $ sortWith snd $ toList $ count2freq $ loseZeros $ countTrigrams 3 ct
+    let bgs = map (`countBigrams` ct) [1..20]
     let bgvar = map var bgs
     --putStrLn $ show "7B: bgvar = " ++ (show bgvar)
     --putStrLn "There is a peak for bg!!1, bigrams with space 2 - which indicates a period of 4, ie. 4 letters coded at a time"
@@ -373,7 +342,7 @@ import Quadgram
     --putStrLn $ "7B: The actual counts of bg!!1 are " ++ (show $ reverse $ sortWith snd $ toList $ bitoMap $loseZeros $ bgs!!1)
     let r1 = applyCrib (Crib (Just 0) Nothing "MART") ct
     let r2 = applyCrib (Crib (Just 0) Nothing "MARTINWE") ct
-    let rs = reverse $ sortWith (S.size) $ consolidate $ r1 ++ r2
+    let rs = reverse $ sortWith S.size $ consolidate $ r1 ++ r2
     --putStrLn $ "Rules are: " ++ (show r1)
     --putStrLn $ "Rules are: " ++ (show r2)
     --putStrLn $ "Rules are: " ++ (show rs)
@@ -384,21 +353,6 @@ import Quadgram
     let bc = BifidPeriodCipher 4 newGrid
     let pt = decipher bc ct
     putStrLn $ "7B: pt = " ++ pt
-    --let bstest = pack "ABCDEFGHIJKL"
-    --putStrLn $ " bstest is: " ++ (show bstest)
-    --let ixs = generate ((BS.length bstest)-4) id
-    --putStrLn $ " ixs is: " ++ (show ixs)
-    --let ci = calcIx $ BS.take 4 (BS.drop 0 $ pack ct)
-    --putStrLn $ " ci: " ++ (show ci)
-    --putStrLn $ " length of qgram is: " ++ (show $ V.length qgram)
-    --let aws = addWordScore bstest 0 0
-    --putStrLn $ " aws: " ++ (show aws)
-    --let sctest = qscore bstest
-    --putStrLn $ " Score is: " ++ (show sctest)
-    --let sc = qscore $ pack pt
-    --putStrLn $ " Score is: " ++ (show sc)
-    --let sc = scoreGrid startGrid ct
-    --putStrLn $ "Grid " ++ startGrid ++ " scores: " ++ (show sc)
 
     return ()
 {-
@@ -443,66 +397,6 @@ solve8A_2016 = do
 count :: (Eq a) => a -> [a] -> Int
 count x = length . filter (==x)
 
-{-
-102
-002
-002
-012
-002
-1112
-0002
-1002
-0102
-1012
-1002
-1102
-0112
-0112
-0002
-00101112
-10100112
-11000112
-11000002
-00000012
-01112
-00012
-00012
-01012
-11002
-01012
-00012
-00112
-01102
-11002
-12
-02
-02
-02
-02
-0112
-1102
-1012
-0002
-0012
-002
-002
-012
-112
-102
-00102
-00102
-01002
-01002
-00002
-111112
-111012
-010012
-000002
-010002
-0111002
-0000002
-101110
--}
 
 frequency :: Ord a => [a] -> [(Int,a)]
 frequency list = map (\l -> (length l, head l)) (L.group (L.sort list))
@@ -510,10 +404,10 @@ frequency list = map (\l -> (length l, head l)) (L.group (L.sort list))
 solve8B_2016::IO ()
 solve8B_2016 = do
     inCipherText <- readFile "./src/2016/8B.txt"
-    let ct  = clean (\c -> c /= ' ') $ concat $ lines inCipherText
+    let ct  = clean (/= ' ') $ concat $ lines inCipherText
     --putStrLn $ "8B: cipherText = " ++ ct
     --putStrLn $ "8B: The length of the cipherText = " ++ (show $ length ct)
-    let fs = reverse $ sort $ map swap $ (filter (\i-> ((snd i) /= 0))) $ toList $ countChars ct
+    let fs = sortBy (flip compare) $ map swap $ filter (\i-> snd i /= 0) $ toList $ countChars ct
     --putStrLn $ "8B: Frequencies are: " ++ (show fs)
     --putStrLn "The factors are 5, 23, 283. So that means 23*283=6509 characters"
     --putStrLn "if we assume that it's binary (using [01]) with 2 haviSo, we need to split into chunks of 5, then transpose each one and we might get lettersng some other meaning?!"
@@ -538,18 +432,18 @@ solve8B_2016 = do
 
     --putStrLn $ "All this shows that this process is working, so lets just convert the binary to int and use vig"
 
-    let cs = map (\w -> nchr $ (read $ [w!!0])*2^4+(read $ [w!!1])*2^3+(read $ [w!!2])*2^2+(read $ [w!!3])*2+(read $ [w!!4])) $ concat twd5
-    putStrLn $ "The new cs is: " ++ (show cs)
-    let fs = reverse $ sort $ map swap $ toList $ count2freq $ countChars cs
+    let cs = map (\w -> nchr $ read [head w]*2^4 + read [w!!1]*2^3 + read [w!!2]*2^2 + read [w!!3]*2 + read [w!!4]) $ concat twd5
+    --putStrLn $ "The new cs is: " ++ show cs
+    let fs = sortBy (flip compare) $ map swap $ toList $ count2freq $ countChars cs
     --putStrLn $ "8B: Frequencies are: " ++ (show fs)
     let ctTopBigrams = take 10 $ reverse $ sortWith snd $ toList $ count2freq $ loseZeros $ countBigrams 1 cs
     --putStrLn $ "8B: Top bigrams are: " ++ (show ctTopBigrams)
-    let ctTop3grams = take 10 $ reverse $ sortWith snd $ toList $ count2freq $ loseZeros $ countNgrams 3 cs
+    let ctTop3grams = take 10 $ reverse $ sortWith snd $ toList $ count2freq $ loseZeros $ countTrigrams 3 cs
     --putStrLn $ "8B: Top 3grams are: " ++ (show ctTop3grams)
     let pCrib = "ABCDEFGHIJKLMNOPQRSTUVWXYZ_[]^"
     let cCrib = "YDWAGC^TQIEUM]SK[O_BRJZFVNxxxx"
     let km = cribMap "" ""
-    let km1 = km `mappend` (cribMap pCrib cCrib)
+    let km1 = km `mappend` cribMap pCrib cCrib
     let pt = apply km1 cs
-    putStrLn $ "8B: pt = " ++ (show $ pt)
+    putStrLn $ "8B: pt = " ++ show pt
     return ()

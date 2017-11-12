@@ -32,7 +32,7 @@ import Data.Map as M (toList)
 import Data.List as L
 import Data.Monoid (mappend)
 import Data.Tuple (swap)
---import Numeric.LinearAlgebra
+import Numeric.LinearAlgebra
 -- import NumericPrelude
 -- import MathObj.Matrix (fromList)
 
@@ -63,10 +63,10 @@ main_2014 = do
         solve8B_2014
 
 stringTo32 :: String -> Int
-stringTo32 s = go 0 s
+stringTo32 = go 0
     where
         go n [] = n
-        go n (x:[]) = 2*n + if x == '1' then 1 else 0
+        go n [x] = 2*n + if x == '1' then 1 else 0
         go n (x:xs) = go (2*n + if x == '1' then 1 else 0) xs
 
 
@@ -74,49 +74,41 @@ solve1A_2014::IO ()
 solve1A_2014 = do
     inCipherText <- readFile "./src/2014/1A.txt"
     let cipherText  = clean isAlpha $ concat $ lines inCipherText
-    let c = ShiftCipher 'E'
-    let pt = decipher c cipherText
-    putStrLn $ "1A: plainText = " ++ (show $ pt)
+    let pt = solveShift cipherText
+    putStrLn $ "1A: plainText = " ++ show pt
     return ()
 
 solve1B_2014::IO ()
 solve1B_2014 = do
     inCipherText <- readFile "./src/2014/1B.txt"
     let cipherText  = clean isAlpha $ concat $ lines inCipherText
-    let fs = reverse $ sort $ L.map swap $ M.toList $ count2freq $ countChars cipherText
-    putStrLn $ "Frequencies are: " ++ (show fs)
-    let c = ShiftCipher 'W'
-    let pt = decipher c cipherText
-    putStrLn $ "1B: plainText = " ++ (show $ pt)
+    let pt = solveShift cipherText
+    putStrLn $ "1B: plainText = " ++ show pt
     return ()
+
+cleanup x = clean isAlpha $ concat $ lines x
 
 solve2A_2014::IO ()
 solve2A_2014 = do
     inCipherText <- readFile "./src/2014/2A.txt"
-    let cipherText  = clean isAlpha $ concat $ lines inCipherText
-    let fs = reverse $ sort $ L.map swap $ M.toList $ count2freq $ countChars cipherText
-    putStrLn $ "Frequencies are: " ++ (show fs)
-    let c = ShiftCipher 'A'
-    let pt = decipher c cipherText
-    putStrLn $ "2A: plainText = " ++ (show $ pt)
+    let cipherText = cleanup inCipherText
+    let fs = sortBy (flip compare) $ L.map swap $ M.toList $ count2freq $ countChars $ cipherText
     let km = cribMap "" ""
-    let km1 = km `mappend` (cribMap "ETA" $ L.map snd $ take 3 fs)
-    --let km2 = mappend km1 $ cribMap "HRY" "MKT"
-    let km2 =  km1 `mappend` (cribMap "DRMKHYNSFOPIWCLBGVU" "SKLBMTQPCVARJNGIHEZ")
+    let km1 = km `mappend` cribMap "ETA" (L.map snd $ take 3 fs)
+    let km2 =  km1 `mappend` cribMap "DRMKHYNSFOPIWCLBGVU" "SKLBMTQPCVARJNGIHEZ"
     let pt2 = apply km2 cipherText
 
-    putStrLn $ "2A: plainText = " ++ (show $ pt2)
+    putStrLn $ "2A = " ++ show pt2
     return ()
 
 solve2B_2014::IO ()
 solve2B_2014 = do
     inCipherText <- readFile "./src/2014/2B.txt"
-    let cipherText  = clean isAlpha $ concat $ lines inCipherText
-    putStrLn $ "cipherText = " ++ cipherText
-    let fs = reverse $ sort $ L.map swap $ M.toList $ count2freq $ countChars cipherText
-    putStrLn $ "Frequencies are: " ++ (show fs)
-    let c = ShiftCipher 'A'
-    let pt = decipher c cipherText
+    let cipherText = cleanup inCipherText
+    let fs = sortBy (flip compare) $ L.map swap $ M.toList $ count2freq $ countChars $ cipherText
+    --putStrLn $ "Frequencies are: " ++ (show fs)
+    --let c = ShiftCipher 'A'
+    --let pt = decipher c cipherText
     -- putStrLn $ "2B: plainText = " ++ (show $ pt)
 
     let km = cribMap "" ""
@@ -126,15 +118,15 @@ solve2B_2014 = do
     let pt3 = apply km2 cipherText
     let cc = take 50 pt3
 
-    putStrLn $ "2B: plainText = " ++ (show $ pt3)
+    putStrLn $ "2B = " ++ show pt3
     return ()
 
 solve3A_2014::IO ()
 solve3A_2014 = do
     inCipherText <- readFile "./src/2014/3A.txt"
     let cipherText  = clean isAlpha $ concat $ lines inCipherText
-    let fs = reverse $ sort $ L.map swap $ M.toList $ count2freq $ countChars cipherText
-    putStrLn $ "Frequencies are: " ++ (show fs)
+    let fs = sortBy (flip compare) $ L.map swap $ M.toList $ count2freq $ countChars cipherText
+    --putStrLn $ "Frequencies are: " ++ (show fs)
     let c = ShiftCipher 'A'
     let pt = decipher c cipherText
     -- putStrLn $ "3A: plainText = " ++ (show $ pt)
@@ -142,16 +134,16 @@ solve3A_2014 = do
     let km1 = km `mappend` (cribMap "ETA" $ L.map snd $ take 3 fs)
     let km2 = km1 `mappend` (cribMap "ETAHRYOUNSILMBKDPCVWFGJX" "DMLKQPJXYBVCNWRSUHITOZGE")
     let pt2 = apply km2 cipherText
-    putStrLn $ "3A: plainText = " ++ (show $ pt2)
+    putStrLn $ "3A = " ++ show pt2
     return ()
 
 solve3B_2014::IO ()
 solve3B_2014 = do
     inCipherText <- readFile "./src/2014/3B.txt"
     let ct  = clean isAlpha $ concat $ lines inCipherText
-    putStrLn $ "cipherText = " ++ ct
-    let fs = reverse $ sort $ L.map swap $ M.toList $ count2freq $ countChars ct
-    putStrLn $ "Frequencies are: " ++ (show fs)
+    --putStrLn $ "cipherText = " ++ ct
+    let fs = sortBy (flip compare) $ L.map swap $ M.toList $ count2freq $ countChars ct
+    --putStrLn $ "Frequencies are: " ++ (show fs)
     let c = ShiftCipher 'A'
     let pt = decipher c ct
     -- putStrLn $ "3B: plainText = " ++ (show $ pt)
@@ -161,7 +153,7 @@ solve3B_2014 = do
     --let km2 = mappend km1 $ cribMap "ABCDEFGHIJKLMNOPRSTUVWY" "SEAHORTUVWXYZBCDGIJKLMP"
     let pt3 = apply km2 ct
     let cc = take 50 pt3
-    putStrLn $ "3B: plainText = " ++ (show $ pt3)
+    putStrLn $ "3B = " ++ (show $ pt3)
     return ()
 
 solve4A_2014::IO ()
@@ -169,64 +161,64 @@ solve4A_2014 = do
     inCipherText <- readFile "./src/2014/4A.txt"
     let ct  = clean isAlpha $ concat $ lines inCipherText
     let fs = reverse $ sort $ L.map swap $ M.toList $ count2freq $ countChars ct
-    putStrLn $ "Frequencies are: " ++ (show fs)
+    --putStrLn $ "Frequencies are: " ++ (show fs)
     let c = ShiftCipher 'A'
     let pt = decipher c ct
     -- putStrLn $ "4A: plainText = " ++ (show $ pt)
     let km = cribMap "" ""
     let km1 = km `mappend` (cribMap "ETA" $ L.map snd $ take 3 fs)
-    let km2 = km1 `mappend` (cribMap "ETAHRYDOCPULWMSVNGIBFKQX" "NJSWHPRDEFKAMBILCVXTUZGO")
+    let km2 = km1 `mappend` cribMap "ETAHRYDOCPULWMSVNGIBFKQX" "NJSWHPRDEFKAMBILCVXTUZGO"
     --let km2 = km1 `mappend` (cribMap "ABCDEFGHIJKLMNOPRSTUVWXY" "STERNUVWXZABCDFGHIJKLMOP")
     let pt2 = apply km2 ct
-    putStrLn $ "4A: plainText = " ++ (show $ pt2)
+    putStrLn $ "4A = " ++ show pt2
     return ()
 
 solve4B_2014::IO ()
 solve4B_2014 = do
     inCipherText <- readFile "./src/2014/4B.txt"
     let ct  = clean isAlpha $ concat $ lines inCipherText
-    putStrLn $ "cipherText = " ++ ct
+    --putStrLn $ "cipherText = " ++ ct
     let fs = reverse $ sort $ L.map swap $ M.toList $ count2freq $ countChars ct
-    putStrLn $ "Frequencies are: " ++ (show fs)
+    --putStrLn $ "Frequencies are: " ++ (show fs)
     let pt = decipherRailRoad 5 ct
-    putStrLn $ "4B: plainText = " ++ pt
+    putStrLn $ "4B = " ++ pt
     return ()
 
 solve5A_2014::IO ()
 solve5A_2014 = do
     inCipherText <- readFile "./src/2014/5A.txt"
     let ct  = clean isAlpha $ concat $ lines inCipherText
-    putStrLn $ "cipherText = " ++ ct
+    --putStrLn $ "cipherText = " ++ ct
     let fs = reverse $ sort $ L.map swap $ M.toList $ count2freq $ countChars ct
-    putStrLn $ "Frequencies are: " ++ (show fs)
+    --putStrLn $ "Frequencies are: " ++ (show fs)
     let km = cribMap "" ""
     let km1 = km `mappend` (cribMap "ETA" $ L.map snd $ take 3 fs)
-    let km2 = km1 `mappend` (cribMap "HRYVPCDKINOSMGLXWUBFZQJ" "THPMFABWUZCJYDXONLERQGV")
+    let km2 = km1 `mappend` cribMap "HRYVPCDKINOSMGLXWUBFZQJ" "THPMFABWUZCJYDXONLERQGV"
     let pt2 = apply km2 ct
-    putStrLn $ "5A: plainText = " ++ (show $ pt2)
+    putStrLn $ "5A = " ++ show pt2
     return ()
 
 solve5B_2014::IO ()
 solve5B_2014 = do
     inCipherText <- readFile "./src/2014/5B.txt"
     let ct  = clean isAlpha $ concat $ lines inCipherText
-    putStrLn $ "cipherText = " ++ ct
+    --putStrLn $ "cipherText = " ++ ct
     let fs = reverse $ sort $ L.map swap $ M.toList $ count2freq $ countChars ct
-    putStrLn $ "Frequencies are: " ++ (show fs)
+    --putStrLn $ "Frequencies are: " ++ (show fs)
     let key = [5,3,1,0,2,4]::[Int]
     let pt = decipher (TranspositionCipher key) ct
-    putStrLn $ "5B: plainText = " ++ pt
+    putStrLn $ "5B = " ++ pt
     return ()
 
 solve6A_2014::IO ()
 solve6A_2014 = do
     inCipherText <- readFile "./src/2014/6A.txt"
     let ct  = clean isAlpha $ concat $ lines inCipherText
-    putStrLn $ "cipherText = " ++ ct
-    let fs = reverse $ sort $ L.map swap $ M.toList $ count2freq $ countChars ct
-    putStrLn $ "Frequencies are: " ++ (show fs)
+    --putStrLn $ "cipherText = " ++ ct
+    let fs = sortBy (flip compare) $ L.map swap $ M.toList $ count2freq $ countChars ct
+    --putStrLn $ "Frequencies are: " ++ (show fs)
     let pt = decipherRailRoad 3 ct
-    putStrLn $ "6A: plainText = " ++ pt
+    putStrLn $ "6A = " ++ pt
     return ()
 
 {-
@@ -261,11 +253,11 @@ solve7A_2014::IO ()
 solve7A_2014 = do
     inCipherText <- readFile "./src/2014/7A.txt"
     let ct  = clean isAlpha $ concat $ lines inCipherText
-    putStrLn $ "cipherText = " ++ ct
-    let fs = reverse $ sort $ L.map swap $ M.toList $ count2freq $ countChars ct
-    putStrLn $ "Frequencies are: " ++ (show fs)
+    --putStrLn $ "cipherText = " ++ ct
+    --let fs = sortBy (flip compare) $ L.map swap $ M.toList $ count2freq $ countChars ct
+    --putStrLn $ "Frequencies are: " ++ show fs
     let pt = solveVig ct
-    putStrLn $ "7A: plainText = " ++ (snd pt)
+    putStrLn $ "7A: plainText = " ++ snd pt
     return ()
 
 solve7B_2014::IO ()
@@ -273,30 +265,30 @@ solve7B_2014 = do
     -- This is an AMSCO cipher
     inCipherText <- readFile "./src/2014/7B.txt"
     let ct  = clean isAlpha $ concat $ lines inCipherText
-    putStrLn $ "cipherText = " ++ ct
-    let fs = reverse $ sort $ L.map swap $ M.toList $ count2freq $ countChars ct
-    putStrLn $ "Frequencies are: " ++ (show fs)
+    --putStrLn $ "cipherText = " ++ ct
+    let fs = sortBy (flip compare) $ L.map swap $ M.toList $ count2freq $ countChars ct
+    --putStrLn $ "Frequencies are: " ++ (show fs)
     let code = [2,0,1,4,3]::[Int] -- column order
     let recode = L.map snd $ sortWith fst $ zip code [0..]::[Int]
     let pt = decipherOld (AmscoCipher False code) ct
-    putStrLn $ "7B: plainText = " ++ pt
+    putStrLn $ "7B = " ++ pt
 
 solve8A_2014::IO ()
 solve8A_2014 = do
     inCipherText <- readFile "./src/2014/8A.txt"
     let ct  = clean isAlpha $ concat $ lines inCipherText
-    putStrLn $ "cipherText = " ++ ct
-    let fs = reverse $ sort $ L.map swap $ M.toList $ count2freq $ countChars ct
-    putStrLn $ "Frequencies are: " ++ (show fs)
+    --putStrLn $ "cipherText = " ++ ct
+    let fs = sortBy (flip compare) $ L.map swap $ M.toList $ count2freq $ countChars ct
+    --putStrLn $ "Frequencies are: " ++ show fs
     let pt = solveVig ct
-    putStrLn $ "8A: plainText = " ++ (snd pt)
+    putStrLn $ "8A: plainText = " ++ snd pt
     return ()
 
 solve8B_2014::IO ()
 solve8B_2014 = do
     inCipherText <- readFile "./src/2014/8B.txt"
     let bt  = take 7000 inCipherText
-    let ct = L.map (nchr.stringTo32) $ chunksOf 5 $ bt
+    let ct = L.map (nchr.stringTo32) $ chunksOf 5 bt
     -- Length of ct is 1400 = 56*25, so potential keys are 2,4,7,8...
     -- Guess 7
     let m = 7::Int
@@ -318,14 +310,14 @@ solve8B_2014 = do
     -- Now there's no need for BABLMANDAB to be at the top of the column, so we can add [1..24] to this
     -- It would be good if they were in order, so try adding 6 to get 19 to zero
     -- Doing the spin with these keys gives:
-    let xs = L.map (\t -> spin (fst t) $ snd t) $ zip tryKey cols
+    let xs = zipWith spin tryKey cols
     -- Which gives as the translation:
-    putStrLn $ show $ L.transpose [xs!!3,xs!!5,xs!!6,xs!!1,xs!!2,xs!!4,xs!!0]
+    --putStrLn $ show $ L.transpose [xs!!3,xs!!5,xs!!6,xs!!1,xs!!2,xs!!4,xs!!0]
     -- Notice that the first 6 sets work OK then the 7th doesn't work - this means we need to add 6 to tryKey
     let tryKey1 = fmap (\x -> (6+x) `mod` 25) tryKey
-    let xs1 = L.map (\t -> spin (fst t) $ snd t) $ zip tryKey1 cols
+    let xs1 = zipWith spin tryKey1 cols
     -- Which gives as the translation:
-    putStrLn $ show $ L.transpose [xs1!!3,xs1!!5,xs1!!6,xs1!!1,xs1!!2,xs1!!4,xs1!!0]
+    --print $ L.transpose [xs1!!3,xs1!!5,xs1!!6,xs1!!1,xs1!!2,xs1!!4,xs1!!0]
 
 
     let ky = L.map nord "FINALTX"

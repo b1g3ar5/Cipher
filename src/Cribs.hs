@@ -7,7 +7,7 @@ module Cribs
         , keywordMap
         , cribMap
         , apply
-        , apply2
+        --, apply2
     ) where
 
 import System.IO
@@ -33,48 +33,44 @@ import CTexts
 -- doesn't know the letter
 
 
-newtype KeyMap = KeyMap (Map Char Char) deriving (Show)
+newtype KeyMap a = KeyMap (Map a Char) deriving (Show)
 
-zeroMap::KeyMap
+zeroMap::Ord a => KeyMap a
 zeroMap = KeyMap $ fromList []
 
-idMap::KeyMap
+idMap :: KeyMap Char
 idMap = KeyMap $ fromList $ L.map (\x->(nchr x,toLower $ nchr x)) [0..25]
 
 -- Note the mappend is left biased when there is a conflict
-instance Monoid KeyMap  where
+instance Ord a => Monoid (KeyMap a) where
     mempty = zeroMap
     mappend (KeyMap k) (KeyMap l) = KeyMap $ M.union k l
 
-caesarMap::KeyMap
+caesarMap::KeyMap Char
 caesarMap = KeyMap $ fromList $ L.map (\x->(nchr x,toLower $ nchr $ mod (x+3) nAlphabet)) [0..25]
 
 
 -- Doesn't check for repeating letters in the key!!!
-keywordMap::String->KeyMap
+keywordMap::String->KeyMap Char
 keywordMap key = KeyMap $ fromList $ zipWith (,) alphabet $ key++rest
     where
         rest = alphabet L.\\ key
 
-cribMap::String->String->KeyMap
-cribMap pt ct = KeyMap $ fromList $ zipWith (\p c -> (toUpper c,toLower p)) pt ct
+cribMap::Ord a => String -> [a] -> KeyMap a
+cribMap pt ct = KeyMap $ fromList $ zipWith (\p c -> (c,toLower p)) pt ct
 
-apply::KeyMap->String->String
+apply::Ord a => KeyMap a -> [a] -> String
 apply (KeyMap m) ct = L.map decode ct
     where
         decode c = case M.lookup c m of
                         Nothing -> '*'
                         Just p -> p
 
-apply2::KeyMap->String->String
+{-
+apply2::Ord a => KeyMap a -> [a] -> String
 apply2 (KeyMap m) ct = L.map decode ct
     where
         decode c = case M.lookup c m of
                         Nothing -> c
                         Just p -> p
-
-
-
-
-
-
+-}

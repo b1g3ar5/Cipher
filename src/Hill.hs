@@ -1,7 +1,7 @@
 module Hill (
 
     ) where
-    
+
 import System.IO
 import Control.Monad
 import Data.Array as A
@@ -19,11 +19,11 @@ import Text.Printf
 myMod::(Num t, Ord t, Integral t) => t->t->t
 myMod s x   | x<0 = (x `mod` s) + s
             | x>s = x `mod` s
-            
--- Works out an inverse of x in mod s
-modinv s x = head $ filter (\z-> ((myMod s (z*x))==1)) [0..(s-1)]
 
-data Vec t = Vec {unVec::[t]} deriving (Show)
+-- Works out an inverse of x in mod s
+modinv s x = head $ filter (\z-> myMod s (z*x)==1) [0..(s-1)]
+
+newtype Vec t = Vec {unVec::[t]} deriving (Show)
 
 --instance Num Vector t where
 --	(+) (Vector as) (Vector bs) = fmap (\a-> fmap ((+) a) bs) as
@@ -33,7 +33,7 @@ vecHead (Vec xs) = head xs
 
 
 instance Functor Vec where
-	fmap f (Vec ts) = Vec (map f ts)
+  fmap f (Vec ts) = Vec (map f ts)
 
 
 -- The function truncates to the shortest length
@@ -41,48 +41,48 @@ dot::Num t => Vec t -> Vec t -> t
 dot (Vec x1) (Vec x2) = sum $ zipWith (*) x1 x2
 
 
-data Mat t = Mat { rows::[Vec t] } deriving (Show)
-   
-instance Functor Mat where
-	fmap f (Mat irs) = Mat  ors
-		where
-			ors = fmap (\r->Vec $ fmap f r) $ map unVec irs
+newtype Mat t = Mat { rows::[Vec t] } deriving (Show)
 
-   
+instance Functor Mat where
+  fmap f (Mat irs) = Mat  ors
+    where
+      ors = (Vec . fmap f) <$> map unVec irs
+
+
 matMod::(Num t, Ord t, Integral t)=>t->Mat t -> Mat t
 matMod s = fmap (myMod s)
-          
+
 pushVec::Vec t->Mat t->Mat t
 pushVec (Vec xs) (Mat irs) = Mat rs
     where
         rs = irs ++ [Vec xs]
-		
+
 pushColVec::Vec t->Mat t->Mat t
 pushColVec (Vec xs) (Mat irs) = Mat rs
     where
         rs = zipWith push xs irs
-		
+
 push::t->Vec t->Vec t
 push x (Vec xs) = Vec (xs++[x])
-              
+
 matSize :: Mat t -> Int
-matSize = length . rows     
+matSize = length . rows
 
 coords :: Mat t -> [[(Int, Int)]]
-coords = zipWith (map . (,)) [0..] . map (zipWith const [0..]) . (map unVec) . rows
+coords = zipWith (map . (,)) [0..] . map (zipWith const [0..] . unVec) . rows
 
 delmatrix :: Int -> Int -> Mat t -> Mat t
 delmatrix i j m = dellist i $ Hill.transpose $ dellist j $ Hill.transpose m
   where
-    dellist i (Mat xs) = Mat $ take i xs ++ drop (i + 1) xs        
+    dellist i (Mat xs) = Mat $ take i xs ++ drop (i + 1) xs
 
 transpose::Mat t -> Mat t
-transpose (Mat rs) = Mat $ map (\c-> Vec c) cs
+transpose (Mat rs) = Mat $ map Vec cs
     where
         cs = L.transpose $ map unVec rs
-                
+
 matMult::Num t=>Mat t ->Mat t ->Mat t
-matMult m1@(Mat r1s) m2@(Mat r2s) = Mat $ [Vec $ map (dot c2) r1s | c2<-rows $ Hill.transpose m2]
+matMult m1@(Mat r1s) m2@(Mat r2s) = Mat [Vec $ map (dot c2) r1s | c2<-rows $ Hill.transpose m2]
 
 determinant :: Floating t => Mat t -> t
 determinant m@(Mat rs)
@@ -98,7 +98,7 @@ cofactorM :: Floating t => Mat t -> Mat t
 cofactorM m = Mat $ map (Vec . map (\(i,j) -> cofactor j i m)) $ coords m
 
 inverse :: Floating t => Mat t -> Mat t
-inverse m = fmap (* recip det) $ cofactorM m
+inverse m = (* recip det) <$> cofactorM m
   where
     det = determinant m
 
