@@ -36,8 +36,8 @@ import Test
 
 someFunc :: IO ()
 someFunc = do
-  --test
-  main_2017
+  test
+  --main_2017
   --putStrLn "someFunc"
 
 

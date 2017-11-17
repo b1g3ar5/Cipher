@@ -22,6 +22,7 @@ import Analysis
 import Cribs
 import Cipher
 import Vignere
+import Autokey
 import Utils
 
 
@@ -33,8 +34,71 @@ test = do
   let cipherText  = clean isAlpha $ concat $ lines inCipherText
   let plainText  = clean isAlpha $ concat $ lines inPlainText
   let (codeKey, pts) = solveVig cipherText
-  print $ show codeKey
-  print $ show pts
+  --print $ show codeKey
+  --print $ show pts
+
+  let key4 = "FORT"
+  let key5 = "FORTY"
+  let pt = "AHUGENEWLEAKOFFINANCIALDOCUMENTSHASREVEALEDHOWTHEPOWERFULANDULTRAWEALTHYINCLUDINGTHEQUEENSPRIVATEESTATESECRETLYINVESTVASTAMOUNTSOFCASHINOFFSHORETAXHAVENSDONALDTRUMPSCOMMERCESECRETARYISSHOWNTOHAVEASTAKEINAFIRMDEALINGWITHRUSSIANSSANCTIONEDBYTHEUSTHELEAKDUBBEDTHEPARADISEPAPERSCONTAINSAHUGENEWLEAKOFFINANCIAL"
+  let ct4 = cipher (AutokeyCipher key4) pt
+  let ct5 = cipher (AutokeyCipher key5) pt
+
+
+  --let pts4 = fmap (\i -> decipher (AutokeyCipher $ replicate i 'A')  ct4) [1..10]
+  --let fss4 = fmap quadgramScore pts4
+  --putStrLn $ "\nquadgram scores are:\n" ++ show (sortOn fst $ zip fss4 fss4)
+  --putStrLn $ "\nSo AAAA is best length\n"
+
+  --let xx = keyLength ct4
+  --putStrLn $ "Solution is: " ++ show xx
+  --let yys = fmap (\i -> topChars ct4 4 i 4) [1..4]
+  --putStrLn $ "Solution is: " ++ show yys
+  -- ["WFES","BOSH","RWKA","AEIF"]
+
+  let pts4 = fmap (\c -> decipher (AutokeyCipher ['A', 'A', 'A', c])  ct4) "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+  let fss4 = fmap quadgramScore pts4
+  putStrLn $ "\nquadgram scores are:\n" ++ show (sortOn fst $ zip fss4 "ABCDEFGHIJKLMNOPQRSTUVWXYZ")
+  putStrLn "\nSo T, X are the best letters\n"
+
+
+  --let pts5 = fmap (\i -> decipher (AutokeyCipher $ replicate i 'A')  ct5) [1..10]
+  --let fss5 = fmap quadgramScore pts5
+  --putStrLn $ "\nquadgram scores are:\n" ++ show fss5
+  --putStrLn "\nSo AAAAA is best length\n"
+
+  --let pts5 = fmap (\c -> decipher (AutokeyCipher $ c : "AAAA")  ct5) "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+  --let fss5 = fmap quadgramScore pts5
+  --putStrLn $ "\nquadgram scores are:\n" ++ show (sortOn fst $ zip fss5 "ABCDEFGHIJKLMNOPQRSTUVWXYZ")
+  --putStrLn "\nSo B, L, F are the best letters\n"
+
+  --let pts5 = fmap (\c -> decipher (AutokeyCipher ['A', c, 'A', 'A', 'A'])  ct5) "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+  --let fss5 = fmap quadgramScore pts5
+  --putStrLn $ "\nquadgram scores are:\n" ++ show (sortOn fst $ zip fss5 "ABCDEFGHIJKLMNOPQRSTUVWXYZ")
+  --putStrLn "\nSo O, K, B are the best letters\n"
+
+  --let pts5 = fmap (\c -> decipher (AutokeyCipher ['A', 'A', c, 'A', 'A'])  ct5) "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+  --let fss5 = fmap quadgramScore pts5
+  --putStrLn $ "\nquadgram scores are:\n" ++ show (sortOn fst $ zip fss5 "ABCDEFGHIJKLMNOPQRSTUVWXYZ")
+  --putStrLn "\nSo R, Q are the best letters\n"
+
+  --let pts5 = fmap (\c -> decipher (AutokeyCipher ['A', 'A', 'A', c, 'A'])  ct5) "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+  --let fss5 = fmap quadgramScore pts5
+  --putStrLn $ "\nquadgram scores are:\n" ++ show (sortOn fst $ zip fss5 "ABCDEFGHIJKLMNOPQRSTUVWXYZ")
+  --putStrLn "\nSo T, X are the best letters\n"
+
+  --let pts5 = fmap (\c -> decipher (AutokeyCipher ['A', 'A', 'A', 'A', c])  ct5) "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+  --let fss5 = fmap quadgramScore pts5
+  --putStrLn $ "\nquadgram scores are:\n" ++ show (sortOn fst $ zip fss5 "ABCDEFGHIJKLMNOPQRSTUVWXYZ")
+  --putStrLn "\nSo J, N, Y are the best letters\n"
+
+  --let pwds = [[a,b,c,d,e]| a <- "BLF", b<-"OKB", c<-"RQ", d<-"TX", e<-"JNY"]
+  --let pts = fmap (\pwd -> decipher (AutokeyCipher pwd)  ct5) pwds
+  --let fss = fmap quadgramScore pts
+  --putStrLn $ "\nquadgram scores are:\n" ++ show (sortOn fst $ zip fss pwds)
+  --putStrLn "\nSo FORTY wins\n"
+
+
+
   return ()
 
 

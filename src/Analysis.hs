@@ -25,13 +25,16 @@ module Analysis
     , isUpperChar
     , countBigrams
     , countTrigrams
+    , countQuadgrams
     , chunksOf
     , chunkUsing
     , eqBigramCount
     , Trigram
+    , Quadgram
     , charFreqs
     , englishness
     , wordsOn
+    , quadgramScore
     ) where
 
 import Prelude hiding (filter)
@@ -46,9 +49,16 @@ import Data.List as L hiding (foldr, filter)
 import Text.Printf
 import Data.Tuple (swap)
 import Data.String.Utils
+import Data.ByteString.Lazy.Char8 (pack)
+
 import Utils
 import Mod
 import Quadgram (qscore)
+
+
+quadgramScore :: String -> Double
+quadgramScore pt = qscore $ pack pt
+
 
 
 wordsOn :: (Char -> Bool) -> String -> [String]
@@ -69,10 +79,11 @@ englishness pt = (lic-65.0)**2.0
 
 type Bigram = (Char, Char)
 
+
 type Trigram = (Char, Char, Char)
 
 
---type Ngram = String
+type Quadgram = (Char, Char, Char, Char)
 
 
 loseZeros::Map a Int -> Map a Int
@@ -98,8 +109,14 @@ zeroCount = fromList $ L.map (\x->(nchr x,0)) [0..25]
 zeroBigramCount::Map Bigram Int
 zeroBigramCount = fromList [((nchr x, nchr y), 0)| x<-[1..25], y<-[1..25]]
 
+
 zeroTrigramCount :: Map Trigram Int
 zeroTrigramCount = fromList [((nchr x, nchr y, nchr z), 0)| x<-[1..25], y<-[1..25], z<-[1..25]]
+
+
+zeroQuadgramCount :: Map Quadgram Int
+zeroQuadgramCount = fromList [((nchr w, nchr x, nchr y, nchr z), 0)| w<-[1..25], x<-[1..25], y<-[1..25], z<-[1..25]]
+
 
 mInsert :: (Ord b) => Map b Int -> b -> Map b Int
 mInsert xs x = insertWith (+) x 1 xs
@@ -120,6 +137,10 @@ countTrigrams::Int->String->Map Trigram Int
 countTrigrams n txt = L.foldl' mInsert zeroTrigramCount $ trigrams n txt
 
 
+countQuadgrams::Int->String->Map Quadgram Int
+countQuadgrams n txt = L.foldl' mInsert zeroQuadgramCount $ quadgrams n txt
+
+
 eqBigramCount::Map Bigram Int->Int
 eqBigramCount = M.foldrWithKey (\k x acc -> acc + (if fst k == snd k then x else 0)) 0
 
@@ -133,6 +154,13 @@ bigrams p txt = [(txt!!ix, txt!!(ix+p)) | ix<-[0..(n-p-1)]]
 -- Here the p is the number of letters in the ngram - which must be consecutive...
 trigrams::Int->String->[Trigram]
 trigrams p txt = [(txt!!ix, txt!!(ix+p), txt!!(ix+p+p)) | ix<-[0..(n-p-p-1)]]
+    where
+        n = length txt
+
+
+-- Here the p is the number of letters in the ngram - which must be consecutive...
+quadgrams::Int->String->[Quadgram]
+quadgrams p txt = [(txt!!ix, txt!!(ix+p), txt!!(ix+p+p), txt!!(ix+p+p+p)) | ix<-[0..(n-p-p-p-1)]]
     where
         n = length txt
 
@@ -281,3 +309,106 @@ quadrigramFreq = [("THAT",0.00761242)
     ,("WERE",0.00231089)
     ,("HING",0.00229944)
     ,("MENT",0.00223347)]
+
+firstLeterOfWordFreq = [
+   ('a',  0.11682)
+  ,('b', 0.04434)
+  ,('c', 0.05238)
+  ,('d', 0.03174)
+  ,('e', 0.02799)
+  ,('g', 0.01642)
+  ,('f', 0.04027)
+  ,('h', 0.04200)
+  ,('i', 0.07294)
+  ,('j', 0.00511)
+  ,('k', 0.00456)
+  ,('l', 0.02415)
+  ,('n', 0.02284)
+  ,('m', 0.03826)
+  ,('o', 0.07631)
+  ,('p', 0.04319)
+  ,('q', 0.00222)
+  ,('r', 0.02826)
+  ,('s', 0.06686)
+  ,('t', 0.15978)
+  ,('u', 0.01183)
+  ,('v', 0.00824)
+  ,('w', 0.05497)
+  ,('x', 0.00045)
+  ,('y', 0.00763)
+  ,('z', 0.00045)]
+
+
+wordLengthDist = [
+  ( 1, 0.02998)
+  , ( 2, 0.17651)
+  , ( 3, 0.20511)
+  , ( 4, 0.14787)
+  , ( 5, 0.10700)
+  , ( 6, 0.08388)
+  , ( 7, 0.07939)
+  , ( 8, 0.05943)
+  , ( 9, 0.04437)
+  , (10, 0.03076)
+  , (11, 0.01761)
+  , (12, 0.00958)
+  , (13, 0.00518)
+  , (14, 0.00222)
+  , (15, 0.00076)
+  , (16, 0.00020)
+  , (17, 0.00010)
+  , (18, 0.00004)
+  , (19, 0.00001)
+  , (20, 0.00001)]
+
+wordFreq = [
+  ("the",    0.0714)
+  , ("of",   0.0416)
+  , ("and",  0.0304)
+  , ("to",   0.0260)
+  , ("in",   0.0227)
+  , ("a",    0.0206)
+  , ("is",   0.0113)
+  , ("that", 0.0108)
+  , ("it",   0.0077)
+  , ("for",  0.0088)
+  , ("as",   0.0077)
+  , ("with", 0.0070)
+  , ("was",  0.0074)
+  , ("be",   0.0065)
+  , ("by",   0.0063)
+  , ("on",   0.0062)
+  , ("not",  0.0061)
+  , ("he",   0.0055)
+  , ("this", 0.0051)
+  , ("i",    0.0052)
+  , ("are",  0.0050)
+  , ("or",   0.0049)
+  , ("his",  0.0049)
+  , ("from", 0.0047)
+  , ("at",   0.0046)
+  , ("which",0.0042)
+  , ("but",  0.0038)
+  , ("an",   0.0037)
+  , ("have", 0.0037)
+  , ("had",  0.0035)
+  , ("they", 0.0033)
+  , ("you",  0.0031)
+  , ("were", 0.0031)
+  , ("their",0.0029)
+  , ("one",  0.0029)
+  , ("all",  0.0028)
+  , ("we",   0.0028)
+  , ("can",  0.0022)
+  , ("her",  0.0022)
+  , ("has",  0.0022)
+  , ("there",0.0022)
+  , ("been", 0.0022)
+  , ("if",   0.0021)
+  , ("more", 0.0021)
+  , ("when", 0.0020)
+  , ("will", 0.0020)
+  , ("would",0.0020)
+  , ("who",  0.0020)
+  , ("so",   0.0019)
+  , ("no",   0.0019)]

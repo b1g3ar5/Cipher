@@ -21,6 +21,7 @@ library
                      , Cipher
                      , Bifid
                      , Vignere
+                     , Autokey
                      , Cribs
                      , Solve2013
                      , Solve2014

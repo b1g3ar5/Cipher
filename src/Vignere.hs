@@ -36,13 +36,13 @@ newtype VigCipher = VigCipher String deriving (Show)
 newtype BeaufortCipher = BeaufortCipher String deriving (Show)
 
 instance Cipher VigCipher where
-    cipher (VigCipher key) = zipWith cShift (cycle key)
+    cipher   (VigCipher key) = zipWith cShift (cycle key)
     decipher (VigCipher key) = zipWith (\k c -> cShift (minus k) c) (cycle key)
-        where
-            minus k = nchr $ nAlphabet - nord k
+      where
+        minus k = nchr $ nAlphabet - nord k
 
 instance Cipher BeaufortCipher where
-    cipher (BeaufortCipher key) = cipher (VigCipher key) . reflectTxt
+    cipher   (BeaufortCipher key) = cipher (VigCipher key) . reflectTxt
     decipher (BeaufortCipher key) = cipher (VigCipher key) . reflectTxt
 
 
