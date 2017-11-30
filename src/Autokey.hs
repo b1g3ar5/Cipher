@@ -25,7 +25,6 @@ instance Cipher AutokeyCipher where
       minus k = nchr $ nAlphabet - nord k
 
 
--- Solves Vignere returning the key and the plain text
 solveAutokey::String->(String, String)
 solveAutokey ct = snd $ head $ (sortOn fst $ zip fss $ zip pwds pts)
   where
@@ -42,9 +41,9 @@ solveAutokey ct = snd $ head $ (sortOn fst $ zip fss $ zip pwds pts)
 combine :: [[a]] -> [[a]]
 combine = sequence
 
+
 makePwds :: [String] -> [String]
 makePwds topCharss = combine topCharss
-
 
 
 topChars :: String -> Int -> Int -> Int -> String

@@ -43,6 +43,11 @@ test = do
   let ct4 = cipher (AutokeyCipher key4) pt
   let ct5 = cipher (AutokeyCipher key5) pt
 
+  let ct6 = cipher (AffineCipher 15 17) pt
+  let pt6 = decipher (AffineCipher 15 17) ct6
+  putStrLn $ "\nAffine deciphered is:\n" ++ show pt6
+  let ((a, b), pt7) = solveAffine ct6
+  putStrLn $ "\nAffine solve is:\n" ++ show ((a, b), pt7)
 
   --let pts4 = fmap (\i -> decipher (AutokeyCipher $ replicate i 'A')  ct4) [1..10]
   --let fss4 = fmap quadgramScore pts4
@@ -57,8 +62,8 @@ test = do
 
   let pts4 = fmap (\c -> decipher (AutokeyCipher ['A', 'A', 'A', c])  ct4) "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
   let fss4 = fmap quadgramScore pts4
-  putStrLn $ "\nquadgram scores are:\n" ++ show (sortOn fst $ zip fss4 "ABCDEFGHIJKLMNOPQRSTUVWXYZ")
-  putStrLn "\nSo T, X are the best letters\n"
+  --putStrLn $ "\nquadgram scores are:\n" ++ show (sortOn fst $ zip fss4 "ABCDEFGHIJKLMNOPQRSTUVWXYZ")
+  --putStrLn "\nSo T, X are the best letters\n"
 
 
   --let pts5 = fmap (\i -> decipher (AutokeyCipher $ replicate i 'A')  ct5) [1..10]

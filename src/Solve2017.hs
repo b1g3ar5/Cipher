@@ -25,9 +25,9 @@ module Solve2017
 
 import System.IO
 import GHC.Exts (sortWith)
-import Data.Char (isAlpha, chr)
+import Data.Char (isAlpha, chr, toUpper)
 import Data.Map (toList)
-import Data.List (map, sortBy, concatMap, sort)
+import Data.List (map, sortBy, concatMap, sort, transpose, intersperse)
 import qualified Data.List as L
 import qualified Data.Set as S (size)
 import Data.Ord (comparing)
@@ -59,15 +59,15 @@ main_2017 :: IO ()
 main_2017 = do
         --solve1A_2017 -- shift
         --solve1B_2017 -- shift
-        -- solve2A_2017 -- square "CAIRO"
+        --solve2A_2017 -- square "CAIRO"
         --solve2B_2017 -- transpose
         --solve3A_2017 -- random crib? Mentions Polybius for 3B
         --solve3B_2017 -- Polybius with Roman numerals
         --solve4A_2017 -- random crib. Mentions Vignere for 4B
         --solve4B_2017 -- Vignere, "ARCANAIMPERII"
-        --solve5A_2017 -- Says polyalphabetic nineteenth century
-        --solve5B_2017
-        --solve6A_2017
+        --solve5A_2017 -- square DECOYZABFGHIJKLMPQRSTUWX". Says polyalphabetic nineteenth century for 5B.
+        --solve5B_2017 -- Beaufort "TCRTGTLHEPCLL"
+        --solve6A_2017 -- Vignere "FKAY", with some first letters of words moved 6 letters forward
         solve6B_2017
         --solve7A_2017
         --solve7B_2017
@@ -251,6 +251,8 @@ solve5A_2017 = do
     let km1 = zeroMap `mappend` cribMap pCrib cCrib
     let pt2 = apply km1 ct
     --putStrLn $ "\n5A: ct = " ++ ct
+    let ret = unzip $ sort $ zip (L.nub pCrib) (L.nub cCrib)
+    putStrLn $ "\n5A: crib = " ++ show ret
     putStrLn $ "\n5A: pt = " ++ pt2
 
     return ()
@@ -269,30 +271,30 @@ solve5B_2017 = do
     let top3grams = take 6 $ reverse $ sortWith snd $ toList $ count2freq $ loseZeros $ countTrigrams 3 cipherText
     putStrLn $ "\nTop 3grams are: " ++ show top3grams
 
--- ON HIS POURNAL DATED THE ODES OF UCTOBER IN THE YEAR OF THE CONSULSHIPS OF
--- IAECELIUS ZULLIUS IAPITO VOMPONIANUS VLOTIUS LIRMUS AND MAIUS IORNELIUS MALLICANUS
--- GGRICOLA WROTE ZHE MYSTERY OF THE BATTLE AT IAMULODONUMIS AT LAST SOLVED
--- IALGACUS MAY BE A HARBARIAN NOW BUT HE WAS A XOMAN CITIZEN THEN WHO BETRAYED
--- US ALL FOR LOVE OF A BARBARIAN O THAS TAKEN ALL MY SKILLS AS A LEADER OF
--- MEN TO KEEP HIM ALIVE ZHE REGIONNAIRES SPEND THEIR EVENINGS DESIGNING NEW
+-- ON HIS JOURNAL DATED THE IDES OF OCTOBER IN THE YEAR OF THE CONSULSHIPS OF
+-- CAECELIUS TULLIUS CAPITO POMPONIANUS PLOTIUS FIRMUS AND GAIUS CORNELIUS GALLICANUS
+-- AGRICOLA WROTE THE MYSTERY OF THE BATTLE AT CAMULODONUM IS AT LAST SOLVED
+-- CALGACUS MAY BE A BARBARIAN NOW BUT HE WAS A ROMAN CITIZEN THEN WHO BETRAYED
+-- US ALL FOR LOVE OF A BARBARIAN IT HAS TAKEN ALL MY SKILLS AS A LEADER OF
+-- MEN TO KEEP HIM ALIVE THE LEGIONNAIRES SPEND THEIR EVENINGS DESIGNING NEW
 -- AND CRUEL WAYS TO EXECUTE HIM IN REVENGE FOR THE SHAME HE BROUGHT UPON US
 -- BUT HIS LIFE IS PRECIOUS OT IS THE ONLY CARD LEFT TO PLAY IN OUR SEARCH FOR
--- SALVATION AND THE RETURN OF THE STOLEN GQUILAEOF WE CAN ALSO RECOVER THE
--- IODEX THEN PERHAPS ITS LOSS CAN BE CONCEALED AND OUR LIVES WILL BE SPARED
--- XELEASING THE XOMAN TRAITOR IALGACUS MUST HAVE STUCK IN THE PROUD GGRICOLAS
--- THROAT BUT HE MADE A PACT WITH THE REMAINING IALEDONII AND TRAVELLED NORTH
--- TO EXCHANGE THE PRISONER FOR THE GQUILAE AND THE IODEX HUT THE CUNNING
--- IALEDONIAN TRIBESMAN SET ANOTHER TRAP AND PRESENTED GGRICOLA WITH A FORGERY
+-- SALVATION AND THE RETURN OF THE STOLEN AQUILAE IF WE CAN ALSO RECOVER THE
+-- CODEX THEN PERHAPS ITS LOSS CAN BE CONCEALED AND OUR LIVES WILL BE SPARED
+-- RELEASING THE ROMAN TRAITOR CALGACUS MUST HAVE STUCK IN THE PROUD AGRICOLAS
+-- THROAT BUT HE MADE A PACT WITH THE REMAINING CALEDONII AND TRAVELLED NORTH
+-- TO EXCHANGE THE PRISONER FOR THE AQUILAE AND THE CODEX BUT THE CUNNING
+-- CALEDONIAN TRIBESMAN SET ANOTHER TRAP AND PRESENTED AGRICOLA WITH A FORGERY
 -- CUNNINGLY ASSEMBLED WITH PAGES FROM THE BOOKS STOLEN WHEN THE TRIBE RANSACKED
--- SONSMRAUPIUS LOR TOO LONG THE SONS OF XOME HAD UNDERESTIMATED
--- THE PEOPLE IN HRITANNIA AND WHILE THE GQUILA OF THE REGION HAD BEEN RESTORED
--- BY THE EXCHANGE THEIR HONOUR WAS NOT GGRICOLA FACED A RETURN TO XOME
--- HUMILIATION AND ALMOST CERTAIN DEATH ZHE SIXTH CHAPTER OF MY TALE OF WOE
+-- MONS GRAUPIUS FOR TOO LONG THE SONS OF ROME HAD UNDERESTIMATED
+-- THE PEOPLE IN BRITANNIA AND WHILE THE AQUILA OF THE REGION HAD BEEN RESTORED
+-- BY THE EXCHANGE THEIR HONOUR WAS NOT AGRICOLA FACED A RETURN TO ROME
+-- HUMILIATION AND ALMOST CERTAIN DEATH THE SIXTH CHAPTER OF MY TALE OF WOE
 -- IS GUARDED BY LIGHTNING BULL AND OAK
 
 
     let pt = solveBeaufort cipherText
-    putStrLn $ "\n5B: pt = " ++ show (fst pt, snd pt)
+    putStrLn $ "\n5B: pt = " ++ show pt
     return ()
 
 
@@ -336,47 +338,81 @@ DODIES UNEXPECTED TALENT FOR FORGERY HAS GIVEN ME AN IDEA C THINK WE MIGHT BE AB
 EXPLOITING HER GIFT BUT C KNOW HER CURRENT FOCUS IS FIGURING OUT WHERE ON EARTH THE SEVENTH WONDER MIGHT BE
 
 
--- GARYAM C FOUND DODIE AT ILYMPIA AND SHE HAS CHAPTER SIX ALREADY MHE HAD BEEN LEADING THE GCXUM OPERATIVES ON A WILD GOOSE CHASE
--- AROUND MELCUK MAKING A LOT OF NOISE ABOUT LOOKING FOR THE MISSING CHAPTER AT THE NEMPLE OF URTEMIS NHAT GAVE ME TIME TO RETRIEVE
--- IT FROM DODIES FRIEND AT THE VRITISH GUSEUM WHICH HAS A COLLECTION OF ARTEFACTS FROM THE NEMPLE DODIE SAYS SHE KNEW WE WOULD
--- FIGURE OUT WHERE TO GO NEXT NHE CLUE WAS IN THE LOCATIONS NHE FIRST ONE WAS AT THE AREAT JYRAMID THE SECOND AT THE FORT OF KAITBAY
--- WHICH WAS BUILT FROM THE RUINS OF THE FIGHT HOUSE AT ULEXANDRIA AND THE THIRD ON LHODES AMONG THE RUINS OF THE WOLOSSUS NHE ENIGHTS
--- CASTLE  AT VODRUM WAS BUILT FROM THE REMAINS OF THE GAUSOLEUM AT BALICARNASSUS HENCE THE GRAVE TASK OF GUARDING THE BOOK MO ALL FIVE
--- CHAPTERS WERE FOUND AT THE SITE OF ONE OF THE MEVEN QONDERS OF THE ANCIENT WORLD NHE ONLY REMAINING LOCATIONS ARE THE MTATUE OF
--- TEUS AT ILYMPIA AND THE BANGING AARDENS OF VABYLON AND NOONE HAS ANY IDEA WHERE THE GARDENS MIGHT HAVE BEEN SO THE ONLY PLACE WE
--- COULD GO NEXT IS ILYMPIA NHE CLUE AT THE END OF CHAPTER FIVE POINTS STRAIGHT THERE SINCE LIGHTING BULL AND OAK ARE ALL SYMBOLS OF
--- TEUS QE SHOULD BE SAFE HERE BECAUSE DODIES NETWORK HAS SENT HER ATTACKERS ON TO FONDON BY LAYING A LONG TRAIL OF FORGED DOCUMENTS
--- REVEALING THE LOCATION OF CHAPTER FIVE NHAT BOUGHT US ENOUGH TIME TO LOCATE AND DECIPHER CHAPTER SIX QE HAD BEEN THINKING ABOUT
--- THE EVOLUTION OF THE CMPERIAL WIPHERS NACITUS USED BOTH THE PIGENERE AND VEAUFORT CIPHERS WHICH ARE POLYALPHABETIC VERSIONS OF
--- THE WAESAR SHIFT AND AT FIRST WE ASSUMED THAT CHAPTER SIX WOULD BE ENCRYPTED THE SAME WAY QE WERE ALMOST RIGHT GEANWHILE
--- DODIES UNEXPECTED TALENT FOR FORGERY HAS GIVEN ME AN IDEA C THINK WE MIGHT BE ABLE TO TURN OUR ENEMIES ON ONE ANOTHER BY
--- EXPLOITING HER GIFT BUT C KNOW HER CURRENT FOCUS IS FIGURING OUT WHERE ON EARTH THE SEVENTH WONDER MIGHT BE
+-- MARYAM I FOUND JODIE AT OLYMPIA AND SHE HAS CHAPTER SIX ALREADY SHE HAD BEEN LEADING THE GCXUM OPERATIVES ON A WILD GOOSE CHASE
+-- AROUND SELCUK MAKING A LOT OF NOISE ABOUT LOOKING FOR THE MISSING CHAPTER AT THE TEMPLE OF ARTEMIS THAT GAVE ME TIME TO RETRIEVE
+-- IT FROM JODIES FRIEND AT THE BRITISH MUSEUM WHICH HAS A COLLECTION OF ARTEFACTS FROM THE TEMPLE JODIE SAYS SHE KNEW WE WOULD
+-- FIGURE OUT WHERE TO GO NEXT NHE CLUE WAS IN THE LOCATIONS NHE FIRST ONE WAS AT THE GREAT PYRAMID THE SECOND AT THE FORT OF RAITBAY
+-- WHICH WAS BUILT FROM THE RUINS OF THE FIGHT HOUSE AT ALEXANDRIA AND THE THIRD ON RHODES AMONG THE RUINS OF THE COLOSSUS THE KNIGHTS
+-- CASTLE  AT BODRUM WAS BUILT FROM THE REMAINS OF THE MAUSOLEUM AT HALICARNASSUS HENCE THE GRAVE TASK OF GUARDING THE BOOK MO ALL FIVE
+-- CHAPTERS WERE FOUND AT THE SITE OF ONE OF THE SEVEN WONDERS OF THE ANCIENT WORLD THE ONLY REMAINING LOCATIONS ARE THE STATUE OF
+-- ZEUS AT OLYMPIA AND THE HANGING GARDENS OF BABYLON AND NOONE HAS ANY IDEA WHERE THE GARDENS MIGHT HAVE BEEN SO THE ONLY PLACE WE
+-- COULD GO NEXT IS OLYMPIA THE CLUE AT THE END OF CHAPTER FIVE POINTS STRAIGHT THERE SINCE LIGHTING BULL AND OAK ARE ALL SYMBOLS OF
+-- ZEUS WE SHOULD BE SAFE HERE BECAUSE JODIES NETWORK HAS SENT HER ATTACKERS ON TO LONDON BY LAYING A LONG TRAIL OF FORGED DOCUMENTS
+-- REVEALING THE LOCATION OF CHAPTER FIVE THAT BOUGHT US ENOUGH TIME TO LOCATE AND DECIPHER CHAPTER SIX QE HAD BEEN THINKING ABOUT
+-- THE EVOLUTION OF THE IMPERIAL CIPHERS TACITUS USED BOTH THE VIGENERE AND BEAUFORT CIPHERS WHICH ARE POLYALPHABETIC VERSIONS OF
+-- THE CAESAR SHIFT AND AT FIRST WE ASSUMED THAT CHAPTER SIX WOULD BE ENCRYPTED THE SAME WAY WE WERE ALMOST RIGHT MEANWHILE
+-- JODIES UNEXPECTED TALENT FOR FORGERY HAS GIVEN ME AN IDEA I THINK WE MIGHT BE ABLE TO TURN OUR ENEMIES ON ONE ANOTHER BY
+-- EXPLOITING HER GIFT BUT I KNOW HER CURRENT FOCUS IS FIGURING OUT WHERE ON EARTH THE SEVENTH WONDER MIGHT BE
 -}
     return ()
 
 
 solve6B_2017::IO ()
 solve6B_2017 = do
-    -- The clue in 4A says 16th century french cipher
+    -- 6A says almost Vignere or Beaufort...
+
+    -- OFFICIAL HINT: For this challenge you have double the time, so assume double the difficulty.
+
+    -- OFFICIAL CLUE: The following has just come in from Maryam. I have taken the liberty to decode it for you.
+    -- Good luck. “The ioc was pretty conclusive about the period of the cipher, but frequency analysis didn’t give
+    -- us a Caesar shift for each column. It was Jodie who pointed out that if the Romans were using lookup tables
+    -- from the Codex then they didn’t have to rely entirely on Caesar shifts in each column so we had to do the hard
+    -- work of figuring out each of the substitutions used.”
+
+    -- OFFICIAL HINT: You may be thinking what a fine mess this is, but half of this you have done before.
+
+    -- OFFICIAL CLUE: Hopefully by now you have the period, you have the ciphers, and you just need a key word.
+    -- Unfortunately, this is related to a farmer’s death.
+
+    -- So, 2 ciphers
+    -- ioc give period of 15
+    -- farmers death is AGRICOLAE MORTEM in Latin which is 15 letters - could be the key word?
+    -- "What a fine mess" is Laurel and Hardy - not sure what relevence this is
+
     inCipherText <- readFile "./src/2017/6B.txt"
-    let ct  = clean isAlpha $ concat $ lines inCipherText
+    let cipherText  = fmap toUpper $ clean isAlpha $ concat $ lines inCipherText
+    putStrLn $ "\n6B length of ct: " ++ show (length cipherText)
 
-    --let fs = process ct
-    --putStrLn $ "\nFrequencies of cipherText are:\n" ++ (concatMap (\t -> show t ++ "\n") fs)
-    --let topBigrams = take 6 $ reverse $ sortWith snd $ toList $ count2freq $ loseZeros $ countBigrams 1 ct
-    --putStrLn $ "\nTop bigrams are: " ++ show topBigrams
-    --let top3grams = take 6 $ reverse $ sortWith snd $ toList $ count2freq $ loseZeros $ countTrigrams 3 ct
-    --putStrLn $ "\nTop 3grams are: " ++ show top3grams
+    let cipherCount = countChars cipherText
+    let cipherFreq = count2freq cipherCount
+    let keyICs = map (`splitIC` cipherText) [1..20]
+    let bestKeySize = ixOfMin (map (\d->(d-65)**2.0) keyICs) +1
+    putStrLn $ "\n6B keyICs: " ++ show keyICs
+    putStrLn $ "\n6B bestKeySize: " ++ show bestKeySize
 
-    -- Try AutokeyCipher
-    let pts = fmap (\i -> decipher (AutokeyCipher $ replicate i 'A')  ct) [1..10]
-    let fss = fmap quadgramScore pts
-    putStrLn $ "\nquadgram scores are:\n" ++ show fss
+    let cts = splitText bestKeySize cipherText
+    putStrLn $ "lengths are: " ++ show (fmap length cts)
+    let splitFreqs = fmap process cts
+    mapM_ (\fs -> putStrLn $ "\n6B splitFss: " ++ show (take 6 fs) ++ "\n") splitFreqs
+
+    let cribs = fmap ct2initialCrib cts
+    let pts = zipWith apply cribs cts
+
+    putStrLn $ "6B: ct = " ++ show (concat $ transpose pts)
 
 
-    --let pts = fmap (\c -> decipher (AutokeyCipher $ [c] ++ replicate 6 'A')  ct) "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-    --let fss = fmap quadgramScore $ take 1 pts
-    --mapM_ (\fs -> putStrLn $ "\nquadgram scores are:\n" ++ (concatMap (\t -> show t ++ "\n") fs)) $ zip "ABCDEFGHIJKLMNOPQRSTUVWXYZ" fss
-
+    let key = "AGRICOLAEMORTEM"
+    --let ptVig = decipher (BeaufortCipher key) cipherText
+    --let ptBef = decipher (VigCipher key) cipherText
+    --putStrLn $ "\n6B ptVig: " ++ show (ptVig)
+    --putStrLn $ "\n6B ptBef: " ++ show (ptBef)
 
     return ()
+
+
+ct2initialCrib :: String -> KeyMap Char
+ct2initialCrib ct = zeroMap `mappend` cribMap pCrib cCrib
+  where
+    fs = process ct
+    pCrib = "ET"
+    cCrib = fmap snd $ take 2 fs
