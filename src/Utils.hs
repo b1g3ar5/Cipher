@@ -82,7 +82,7 @@ chunksOf n xs = take n xs : chunksOf n (drop n xs)
 
 
 chunkUsing::[Int]->[a]->[[a]]
-chunkUsing [] xs = [xs]
+chunkUsing [] xs = []
 chunkUsing (n:ns) xs = take n xs : chunkUsing ns (drop n xs)
 
 

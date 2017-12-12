@@ -23,7 +23,6 @@ module Cipher
         , KeyCipher(..)
         , RailRoadCipher(..)
         , PlayfairCipher(..)
-        , TranspositionCipher(..)
         , AmscoCipher(..)
         , lineLengths
         , padLines
@@ -46,6 +45,7 @@ module Cipher
         , solveAmsco
         , decipherOld
         , mightBeEnglish
+        , topTriGrams
         --, myInv
         --, mySolve
     ) where
@@ -261,11 +261,11 @@ solveAmsco is21 n ct = L.filter (\(pt, code) -> mightBeEnglish pt) pts
 
 -- This function just woks out the trigrams and checks that "THE" and "AND" are in the top 4
 mightBeEnglish :: String -> Bool
-mightBeEnglish pt = (elem ('T', 'H', 'E') top4) && (elem ('A', 'N', 'D') top4)
+mightBeEnglish pt = (elem ('T', 'H', 'E') top4) -- && (elem ('A', 'N', 'D') top4)
     where
         top4 = topTriGrams 10 pt
 
-topTriGrams n ct = fmap fst $ take n $ reverse $ sortWith snd $ M.toList $ count2freq $ loseZeros $ countTrigrams 3 ct
+topTriGrams n ct = fmap fst $ take n $ reverse $ sortWith snd $ M.toList $ count2freq $ loseZeros $ countTrigrams 1 ct
 
 --NumericPrelude.filter (\(i,x)-> x=="THE") $ zip [0..] $ fmap (\code -> head $ topTriGrams 1 $ decipher (AmscoCipher True code) ct) $ permutations [0,1,2,3,4,5]
 
@@ -548,22 +548,3 @@ data PlayfairCipher = PlayfairCipher Key
 instance Cipher PlayfairCipher where
     cipher (PlayfairCipher bs) = playfairCipher bs
     decipher (PlayfairCipher bs) = playfairDecipher bs
-
-
--- This is a transpoisiotn cipher where the key is given by [Int]
-data TranspositionCipher = TranspositionCipher [Int]
-
-instance Cipher TranspositionCipher where
-    cipher (TranspositionCipher key) pt = L.concat $ L.map fst $ sortWith snd $ zip (L.transpose ws) key
-        where
-            m = length key
-            ws = chunksOf m pt
-    decipher (TranspositionCipher key) ct = L.concat $ L.transpose  $ L.map fst $ sortWith snd $ zip ws unKey
-        where
-          unKey = L.map fst $ sortWith snd $ zip [0..] key
-          m = length key
-          n = length ct
-          (q, r) = quotRem n m
-          cols = zipWith (+) (take n $ repeat q) ((take r $ repeat 1) ++ (take (m-r) $ repeat 0))
-          ws = chunkUsing cols ct
-          -- putStrLn $ concat $ L.transpose ws

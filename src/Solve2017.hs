@@ -16,11 +16,11 @@ module Solve2017
         , solve5A_2017
         , solve5B_2017
         , solve6A_2017
-        --, solve6B_2017
-        --, solve7A_2016
-        --, solve7B_2016
-        --, solve8A_2016
-        --, solve8B_2016
+        , solve6B_2017
+        , solve7A_2017
+        , solve7B_2017
+        --, solve8A_2017
+        --, solve8B_2017
     ) where
 
 import System.IO
@@ -28,6 +28,7 @@ import GHC.Exts (sortWith)
 import Data.Char (isAlpha, chr, toUpper)
 import Data.Map (toList)
 import Data.List (map, sortBy, concatMap, sort, transpose, intersperse)
+import Data.List.Split (splitOn)
 import qualified Data.List as L
 import qualified Data.Set as S (size)
 import Data.Ord (comparing)
@@ -45,9 +46,11 @@ import Data.Proxy
 
 import Utils
 import Analysis
+import Stats
 import Cribs
 import Cipher
 import Vignere
+import Transposition
 import Autokey
 import Bifid
 import Hill
@@ -62,15 +65,15 @@ main_2017 = do
         --solve2A_2017 -- square "CAIRO"
         --solve2B_2017 -- transpose
         --solve3A_2017 -- random crib? Mentions Polybius for 3B
-        --solve3B_2017 -- Polybius with Roman numerals
+        --solve3B_2017 -- Polybius (ie. coordinates in a 5'5 square) with Roman numerals
         --solve4A_2017 -- random crib. Mentions Vignere for 4B
-        --solve4B_2017 -- Vignere, "ARCANAIMPERII"
+        --solve4B_2017 -- Vignere "ARCANAIMPERII"
         --solve5A_2017 -- square DECOYZABFGHIJKLMPQRSTUWX". Says polyalphabetic nineteenth century for 5B.
         --solve5B_2017 -- Beaufort "TCRTGTLHEPCLL"
         --solve6A_2017 -- Vignere "FKAY", with some first letters of words moved 6 letters forward
-        solve6B_2017
-        --solve7A_2017
-        --solve7B_2017
+        --solve6B_2017 -- Vignere with Affine "AGRICOLAMORTEM" (instead of shift)
+        --solve7A_2017 -- Vignere "HANGINGGARDENS"
+        solve7B_2017
         --solve8A_2017
         --solve8B_2017
 
@@ -379,10 +382,13 @@ solve6B_2017 = do
     -- farmers death is AGRICOLAE MORTEM in Latin which is 15 letters - could be the key word?
     -- "What a fine mess" is Laurel and Hardy - not sure what relevence this is
 
+    -- So, let's try Vignere and Affine alternate...
+
     inCipherText <- readFile "./src/2017/6B.txt"
     let cipherText  = fmap toUpper $ clean isAlpha $ concat $ lines inCipherText
     putStrLn $ "\n6B length of ct: " ++ show (length cipherText)
 
+    printStats cipherText
     let cipherCount = countChars cipherText
     let cipherFreq = count2freq cipherCount
     let keyICs = map (`splitIC` cipherText) [1..20]
@@ -393,19 +399,11 @@ solve6B_2017 = do
     let cts = splitText bestKeySize cipherText
     putStrLn $ "lengths are: " ++ show (fmap length cts)
     let splitFreqs = fmap process cts
-    mapM_ (\fs -> putStrLn $ "\n6B splitFss: " ++ show (take 6 fs) ++ "\n") splitFreqs
 
-    let cribs = fmap ct2initialCrib cts
-    let pts = zipWith apply cribs cts
-
-    putStrLn $ "6B: ct = " ++ show (concat $ transpose pts)
-
-
-    let key = "AGRICOLAEMORTEM"
-    --let ptVig = decipher (BeaufortCipher key) cipherText
-    --let ptBef = decipher (VigCipher key) cipherText
-    --putStrLn $ "\n6B ptVig: " ++ show (ptVig)
-    --putStrLn $ "\n6B ptBef: " ++ show (ptBef)
+    let pts = fmap solveAffine cts
+    let key = fmap (\t -> nchr $ snd $ fst t) pts
+    putStrLn $ "\n6B key is: " ++ show key
+    putStrLn $ "\n6B ptAff: " ++ show (concat $ transpose $ fmap snd pts)
 
     return ()
 
@@ -416,3 +414,142 @@ ct2initialCrib ct = zeroMap `mappend` cribMap pCrib cCrib
     fs = process ct
     pCrib = "ET"
     cCrib = fmap snd $ take 2 fs
+
+
+solve7A_2017::IO ()
+solve7A_2017 = do
+  inCipherText <- readFile "./src/2017/7A.txt"
+  let cipherText  = clean isAlpha $ concat $ lines inCipherText
+
+  let pt = snd $ solveVig cipherText
+  putStrLn $ "7A: pt = " ++ show pt
+-- WELL THAT WAS A SURPRISE AND QUITE A RELIEF AS I SAID BEFORE NO ONE REALLY KNOWS WHERE THE
+-- HANGING GARDENS OF BABYLON WERE LOCATED AND I DONT THINK WE WOULD HAVE HAD A CHANCE OF FINDING
+-- THE NEXT CHAPTER IF THAT WAS WHERE IT WAS BURIED BUT IT SEEMS THAT TACITUS HAD A BETTER
+-- IDEA THE BABYLONIAN GODDESS OF LOVE AND WAR WAS ISHTAR AND THE ISHTAR GATE FROM BABYLON WAS
+-- ONE OF THE ORIGINAL SEVEN WONDERS OF THE WORLD IT WAS LATER REPLACED BY THE LIGHTHOUSE OF
+-- ALEXANDRIA SO I AM NOT SURE WHY TACITUS USED BOTH BUT MAYBE BECAUSE HE DIDNT KNOW WHERE
+-- THE HANGING GARDENS WERE EITHER OR MAYBE HE JUST WANTED TO CONFUSE THE UNINITIATED AND TO
+-- ADD AN EXTRA LAYER OF SECRECY VIA CONFUSION A BIT LIKE HE DOES BY PILING UP CIPHERS IN THESE
+-- LATER CHAPTERS ANYWAY WE ARE IN LUCK THE ISHTAR GATE NOW LIVES IN THE PERGAMON MUSEUM IN
+-- BERLIN AND I HAPPEN TO HAVE A PASS TO THE FULL COLLECTION I AM NOT SURE HOW THEY WILL FEEL
+-- ABOUT US DISMANTLING IT TO TRY TO FIND CHAPTER SEVEN BUT IF WE EXPLAIN WHAT IS IN IT I
+-- SUSPECT THE CURATORS CURIOSITY WILL OVERCOME HIS NATURAL PROTECTIVENESS PERHAPS THERE WE
+-- WILL FINALLY UNLOCK THE SECRET OF THE IXTH LEGION THAT LEAVES THE QUESTION OF HOW WE DEAL
+-- WITH MIDAS AND MARYAM HAS A CLEVER IDEA WE SHOULD LET THE COLLECTOR DEAL WITH THEM THE
+-- RUSSIAN MAFIA CAN BE PRETTY RUTHLESS IF THEY FEEL BETRAYED AND SHE HAS SUGGESTED A WAY
+-- WE MIGHT MAKE THE THIEVES FALL OUT IT IS A CUNNING PLAN AND I THINK I CAN HELP
+
+  -- Look at the Stats
+  let icPt = ic pt
+  putStrLn $ "7A: icPt = " ++ show icPt
+  let micPt = mic pt
+  putStrLn $ "7A: micPt = " ++ show micPt
+  let mkaPt = mka pt
+  putStrLn $ "7A: mkaPt = " ++ show mkaPt
+  let dicPt = dic pt
+  putStrLn $ "7A: dicPt = " ++ show dicPt
+  let ediPt = edi pt
+  putStrLn $ "7A: ediPt = " ++ show ediPt
+  let (lrPt, rodPt) = lr pt
+  putStrLn $ "7A: lrPt = " ++ show lrPt
+  putStrLn $ "7A: rodPt = " ++ show rodPt
+  let ldiPt = ldi pt
+  putStrLn $ "7A: ldiPt = " ++ show ldiPt
+  let sddPt = sdd pt
+  putStrLn $ "7A: sddPt = " ++ show sddPt
+  putStrLn $ "\n"
+
+
+  return ()
+
+
+printStats :: String -> IO ()
+printStats ct = do
+  let fs = countChars ct
+  putStrLn $ "number of chars is: " ++ show (length $ loseZeros fs)
+  let icCt = ic ct
+  putStrLn $ "ic = " ++ show icCt
+  let micCt = mic ct
+  putStrLn $ "mic = " ++ show micCt
+  let mkaCt = mka ct
+  putStrLn $ "mka = " ++ show mkaCt
+  let dicCt = dic ct
+  putStrLn $ "dic = " ++ show dicCt
+  let ediCt = edi ct
+  putStrLn $ "edi = " ++ show ediCt
+  let (lrCt, rodCt) = lr ct
+  putStrLn $ "lr = " ++ show lrCt
+  putStrLn $ "rod = " ++ show rodCt
+  let ldiCt = ldi ct
+  putStrLn $ "ldi = " ++ show ldiCt
+  let sddCt = sdd ct
+  putStrLn $ "sdd = " ++ show sddCt
+  return ()
+
+solve7B_2017::IO ()
+solve7B_2017 = do
+  inCipherText <- readFile "./src/2017/7B.txt"
+  inCipherText2 <- readFile "./src/2017/7B_2.txt"
+  let cipherText  = fmap toUpper $ clean (\c -> isAlpha c || c =='_') $ concat $ lines inCipherText
+
+  let ct = decipher (scytaleCipher 6) cipherText
+
+  let pt = solveVig ct
+  putStrLn $ "7B: pt = " ++ show pt
+
+  --putStrLn $ "7B: length of ct2 is: " ++ show (length ct2)
+  --putStrLn $ unlines $ chunksOf 344 $ fmap (\c -> if c=='I' then 'O' else '-') ct2
+  -- This says "Scytale securitatem praebet amplius"
+  -- Which means "Scytale provides more security"
+
+-- WITH HINDSIGHT AN OPPORTUNITY FOR PEACE WAS THROWN AWAY CALGACUS MAY HAVE BEEN A
+-- TRAITOR BUT HE WAS BORN A ROMAN AND HAD FORGED THE LOCAL TRIBES INTO AN ORGANISED
+-- AND DISCIPLINED FORCE IT MAY HAVE BEEN POSSIBLE TO TREAT WITH HIM BRINGING
+-- CALEDONIA WITHIN THE EMPIRE IN EXCHANGE FOR THE GOVERNORSHIP OF CALEDONIA BUT SALUSTIUS WAS
+-- A GREEDY AND AMBITIOUS MAN FOR WHOM VICTORY WAS EVERYTHING HE HAD NOW ISH TO SHARE CALEDONIA OR
+-- GLORY WITH CALGACUS AND THUS CONCEIVED A PLAN TO REPAY THE TREACHERY OF THE CALEDONII IN FULL HE MADE
+-- A GREAT FANFARE OF PUSHING HIS FORCES INTO NORTHERN CALEDONIA TO THE REMOTE FORT OF INCHTUTHIL
+-- SALUSTIUS IN SECRET HAD CONCEIVED AS LYAND AUDACIOUS PLAN CATO WAS INSTRUCTED TO PROCEED WITH AN
+-- EXPEDITIONARY FORCE FROM EBORACUM TO THE FRONTIER FORT AT INCHTUTHIL WHERE HE WOULD RELIEVE THE II
+-- LEGION ADIUTRIXPIAFIDEL   -IS WHO WERE REQUIRED IN DACIA HE QUICKLY ESTABLISHED THE LEGIONIN A STATE
+-- OF BATTLE READINESS AND WAS JOINED THERE BY SALUSTIUS WHO TOOK COMMAND OF THE IX LEGION HUMILIATING
+-- THE FAITHFUL CATO IN FRONT OF HIS OWN MEN SALUSTIUS WAS NO STRATEGIST BUT IN TACTICS AND CUNNING HE
+-- KNEW NO PARALLEL FROM THE LEGIONS EXTENSIVE SCOUTING NETWORK HE HAD LEARNED THAT CALGACUS HAD
+-- ESTABLISHED HIS HEADQUARTERS IN THE MOUNTAINS WEST OF STRACATHRO THE MARCHING CAMP LEAVING CATO IN
+-- CHARGE OF A SMALL HOLDING FORCE OF TWO COHORTS AT INCHTUTHIL SALUSTIUS OSTENTATIOUSLY LED THE REST
+-- OF THE IX LEGION TO STRACATHRO HE SET UP CAMP AND LAID WASTE TO THE VILLAGES AROUND HIM IN AN ACT OF
+-- GROSS PROVOCATION AND CRUELTY HE EMULATED HIS HERO CRASSUS KNOWING THAT THE MANY CALEDONII WHO SUFFERED
+--  A GRUESOME END ON HIS CALEDONIAN WAY WERE NOT INVOLVED WITH CALGACUS AND HIS REVOLT THEY WERE JUST
+-- FODDER IN HIS ATTEMPT TO PROVOKE A CONFRONTATION AS HE KNEW THEY MUST THE CALEDONIAN ARMIES MUSTERED
+-- FOR A FINAL SHOW DOWN WITH THE LEGION AND MARCHED ON STRACATHRO SALUSTIUS SET HIS FORCES WITH PICKET
+-- FENCES AND TRAPS BUT AGAINST THE SCALE OF THE CALEDONIAN FORCE THERE WAS LITTLE HOPE OF SUCCESS NONE
+-- THE LESS WITH THEIR PRIDE AT STAKE AND ACCEPTING THEIR FATE THE LEGIONNAIRES OF THE IXTH WATCHED AND
+-- WAITED TO JOIN BATTLE UNDER COVER OF DARKNESS AND BEFORE ANY SKIRMISH COULD BE CONDUCTED SALUSTIUS
+-- SECRETLY SET OUT WITH A SMALL FORCE OF HAND PICKED SOLDIERS WHO HAD TRAVELLED WITH HIM FROM ROME
+-- WITH A DEVIOUS PLAN TO STEAL THE CODEX FROM RIGHT UNDER CALGACUS NOSE SALUSTIUS WAS A VERY UNPLEASANT
+-- MAN BUT HE WAS WIDELY READ AND KNEW OF THE HEBREW TALE OF GIDEON HE SET HIS GUARD AT KEY POINTS AROUND
+-- THE PERIMETER OF THE CALEDONIAN CAMP AND IN THE DEPTHS OF NIGHT WHEN ALL MEN ARE AT THEIR LOWEST
+-- EBB THEY ROSE AS ONE BREAKING COVER AND MAKING NOISE LIKE A MUCH LARGER ARMY IN THE CONFUSION
+-- SALUSTIUSS LIEUTENANT STOLE INTO THE CAMP AND MADE AWAY WITH THE CODEX RETURNING IT TO SALUSTIUS
+-- WHO REMAINED THROUGHOUT AT A SAFE DISTANCE PERHAPS SALUSTIUS CARED NOTHING FOR THE FATE OF THE IXTH
+-- LEGION PERHAPS ITS DESTRUCTION WAS PART OF DOMITIANS PLANNED REVENGE OR PERHAPS IT WAS JUST A
+-- DIVERSIONARY TACTIC TO HAVE THEM CAMPED AT STRACATHRO BUT THE OUTCOME WAS THE SAME ROUSED BY THE
+-- SURPRISE INVASION OF THEIR CAMP THE CALEDONIAN WARRIORS LAUNCHED A MASSIVE ASSAULT ON STRACATHRO
+-- WHATEVER HIS MOTIVATION IN AN ACT OF THE GREATEST TREACHERY SALUSTIU SABANDONED THE IXTH LEGION TO
+-- OBLIVION AND SET OUT SOUTH FOR THE FORTIFIED PORT AT CARRIDEN WHERE HE INTENDED TO ESCAPE BY SEA
+-- FROM BRITANNIA WITH THE CODEX HE SENT A DESPATCH TO CATO ORDERING HIM TO RETREAT WITH ALL ABLE
+-- MEN TO CARRIDEN RAZE INCHTUTHIL TO THE GROUND AND LEAVE NONE OF THE WEAK OR WOUNDED ALIVE
+-- IN ORDER TO PROVIDE NOTHING OF VALUE TO THE ENEMY SALUSTIUS AND HIS GUARD MUST HAVE THOUGHT
+-- THEY WOULD BE SAFE BUT ONCE MORE A PROUD SON OF ROME HAD GROSSLY UNDERESTIMATED CALGACUS
+-- REALISING QUICKLY THAT THE CODEX WAS LOST HE SET OUT TO RECOVER IT MARCHING HIS MEN DOUBLE
+-- TIME IN PURSUIT OF THE FLEEING SALUSTIUS AND SO AT CARRIDEN SALUSTIUS REGROUPED WITH HIS TRUSTY
+-- GUARD AND THE REMAINING COHORTS FROM INCHTUTHIL LED BY THE STEADFAST MARCUS FIDELIUS CATO IT
+-- WAS NOT LONG BEFORE THE PURSUING CALEDONIAN FORCE ARRIVED BEFORE THE GATES OF CARRIDEN AND LAID
+-- SIEGE WITH THEIR BACKS TO WATER THE ROMAN FORCE WAS TRAPPED THEIR SAFETY LAY IN A REFUGE FAR OVER
+-- THE SEA AND IT IS FITTING THAT THE ENDING OF MY STORY WILL LIE BURIED SAFELY IN THEIR REFUGE
+-- AT NOVIO MAGUS BATAVORUM AMCG
+
+
+
+  return ()

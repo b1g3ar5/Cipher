@@ -47,6 +47,7 @@ import Analysis
 import Cribs
 import Cipher
 import Vignere
+import Transposition
 import Bifid
 import Hill
 import Quadgram (qscore, addWordScore, calcIx, qgram, readDoubles)

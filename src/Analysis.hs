@@ -11,28 +11,26 @@ module Analysis
     , clean
     , count2freq
     , countChars
-    , splitIC
     , ixOfMin
     , ixOfMax
     , loseZeros
     , splitText
-    , incidenceOfCoincidence
-    , normalisedIncidenceOfCoincidence
     , var
     , mean
     , corr
     , freqDist
     , isUpperChar
     , countBigrams
+    , countEvenBigrams
     , countTrigrams
     , countQuadgrams
     , chunksOf
     , chunkUsing
     , eqBigramCount
-    , Trigram
-    , Quadgram
+    , Bigram(..)
+    , Trigram(..)
+    , Quadgram(..)
     , charFreqs
-    , englishness
     , wordsOn
     , quadgramScore
     ) where
@@ -66,15 +64,6 @@ wordsOn p s =  case dropWhile p s of
                       "" -> []
                       s' -> w : wordsOn p s''
                             where (w, s'') = break p s'
-
-
--- Measures the difference of the correlation from 65 the expected correlation for English
--- The smaller the better. This is usually for cipher text and the frequencies of cipher
--- letter are compared to frequencies of letters in English
-englishness :: String -> Double
-englishness pt = (lic-65.0)**2.0
-  where
-    lic = incidenceOfCoincidence $ countChars pt
 
 
 type Bigram = (Char, Char)
@@ -133,6 +122,12 @@ countBigrams n txt = L.foldl' mInsert zeroBigramCount $ bigrams n txt
 
 -- counts the occurences of each bigram in a string
 -- where n is the distance between the letters
+countEvenBigrams::String->Map Bigram Int
+countEvenBigrams txt = L.foldl' mInsert zeroBigramCount $ evenBigrams txt
+
+
+-- counts the occurences of each bigram in a string
+-- where n is the distance between the letters
 countTrigrams::Int->String->Map Trigram Int
 countTrigrams n txt = L.foldl' mInsert zeroTrigramCount $ trigrams n txt
 
@@ -150,6 +145,17 @@ bigrams::Int->String->[Bigram]
 bigrams p txt = [(txt!!ix, txt!!(ix+p)) | ix<-[0..(n-p-1)]]
     where
         n = length txt
+
+
+-- Here the p is the distance between the letters of the bigram
+evenBigrams::String->[Bigram]
+evenBigrams txt = [(txt!!ix, txt!!(ix+1)) | ix<-[0, 2..lst]]
+    where
+        n = length txt
+        lst = if even n then n - 2 else n - 3
+
+
+
 
 -- Here the p is the number of letters in the ngram - which must be consecutive...
 trigrams::Int->String->[Trigram]
@@ -169,26 +175,6 @@ count2freq::Map a Int->Map a Double
 count2freq c = M.map (\v-> fromIntegral v / fromIntegral tot ) c
         where
             tot = M.foldl (+) 0 c
-
-
-normalisedIncidenceOfCoincidence::Map Char Int -> Double
-normalisedIncidenceOfCoincidence fs = (fromIntegral nAlphabet) * incidenceOfCoincidence fs
-
--- This is the IC from https://bionsgadgets.appspot.com/gadget_forms/acarefstats.html
--- it's expected to be 63 +- 5 for plain text (ie. 1.73/26*1000)
--- IC = SUM(freq(x)*(freq(x)-1)) / (L*(L-1))
-incidenceOfCoincidence::Map Char Int -> Double
-incidenceOfCoincidence fs =  M.foldl (\a n -> fromIntegral (n*(n-1))+a) 0.0 fs / fromIntegral (totN * (totN - 1))
-  where
-    totN = M.foldl' (+) 0 fs
-
-
--- works out the average ic over the pieces of a string split into n pieces
--- So, the chance that the pieces could each be english
-splitIC::Int->String->Double
-splitIC n txt =sum (L.map (incidenceOfCoincidence . countChars) spl) / fromIntegral n * 1000.0
-        where
-            spl = splitText n txt
 
 
 -- Works out the correlation of an offset of n of a string with standard

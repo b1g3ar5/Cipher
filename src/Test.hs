@@ -17,11 +17,13 @@ import Data.List as L
 import Text.Printf
 import Data.Tuple (swap)
 import Data.String.Utils
+import GHC.Exts (sortWith)
 
 import Analysis
 import Cribs
 import Cipher
 import Vignere
+import Transposition
 import Autokey
 import Utils
 
@@ -48,6 +50,36 @@ test = do
   putStrLn $ "\nAffine deciphered is:\n" ++ show pt6
   let ((a, b), pt7) = solveAffine ct6
   putStrLn $ "\nAffine solve is:\n" ++ show ((a, b), pt7)
+
+  --let pt = "AHUGENEWLEAKOFFINANCIALDOCUMENTSHASREVEALED"
+  let ct7 = cipher (TranspositionCipher $ fmap nord "BOL") pt
+  putStrLn $ "\nTransposition enciphered is:\n" ++ show ct7
+  let pt7 = decipher (TranspositionCipher $ fmap nord "BOL") ct7
+  putStrLn $ "\nTransposition deciphered is:\n" ++ show pt7
+  let pt7 = decipher (TranspositionCipher [0, 2, 1]) ct7
+  putStrLn $ "\nTransposition deciphered is:\n" ++ show pt7
+
+  let keys = permutations [0..2]
+  putStrLn $ "\nkeys:\n" ++ show keys
+  let pts = fmap (\k -> decipher (TranspositionCipher k) ct7) keys
+  putStrLn $ "\npts:\n" ++ show pts
+  let fds = fmap mightBeEnglish pts
+  putStrLn $ "\nfds:\n" ++ show fds
+  let top4 = fmap (topTriGrams 10) pts
+  putStrLn $ "\ntop4:\n" ++ show top4
+  let ix = ixOfMin fds
+  putStrLn $ "\nix:\n" ++ show ix
+  putStrLn $ "pt!!0:" ++ (show $ pts!!0)
+  putStrLn $ "pt!!5:" ++ (show $ pts!!5)
+  putStrLn $ "Top4 of pt!!0 is:" ++ (show $ topTriGrams 10 $ pts!!0)
+  putStrLn $ "Top4 of pt!!5 is:" ++ (show $ topTriGrams 10 $ pts!!5)
+  --let tt = M.toList $ count2freq $ loseZeros $ countTrigrams 1 $ pts!!5
+  --putStrLn $ "tt:" ++ (show tt)
+
+  let (key, pt7) = solveTransposition ct7
+  putStrLn $ "\nTranscription solve is:\n" ++ show (key, pt7)
+
+
 
   --let pts4 = fmap (\i -> decipher (AutokeyCipher $ replicate i 'A')  ct4) [1..10]
   --let fss4 = fmap quadgramScore pts4
@@ -101,8 +133,6 @@ test = do
   --let fss = fmap quadgramScore pts
   --putStrLn $ "\nquadgram scores are:\n" ++ show (sortOn fst $ zip fss pwds)
   --putStrLn "\nSo FORTY wins\n"
-
-
 
   return ()
 

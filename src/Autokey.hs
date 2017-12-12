@@ -4,6 +4,7 @@ module Autokey
   , solveAutokey
   , topChars
   , keyLength
+  , makePwds
 ) where
 
 import Data.List
@@ -20,18 +21,18 @@ newtype AutokeyCipher = AutokeyCipher String deriving (Show)
 
 instance Cipher AutokeyCipher where
   cipher   (AutokeyCipher key) pt = zipWith cShift (key ++ pt) pt
-  decipher k@(AutokeyCipher key) ct = zipWith (\k c -> cShift (minus k) c) (key ++ decipher k ct) ct
+  decipher ciph@(AutokeyCipher key) ct = zipWith (\k c -> cShift (minus k) c) (key ++ decipher ciph ct) ct
     where
       minus k = nchr $ nAlphabet - nord k
 
 
 solveAutokey::String->(String, String)
-solveAutokey ct = snd $ head $ (sortOn fst $ zip fss $ zip pwds pts)
+solveAutokey ct = snd $ head (sortOn fst $ zip fss $ zip pwds pts)
   where
     -- Work out the key length
     lens = keyLength ct
     -- Work out the top 3 for each letterFreq
-    tops = fmap  (\ix -> topChars ct (lens!!1) ix 3) [0..((lens!!1)-1)]
+    tops = fmap  (\ix -> topChars ct (lens!!1) ix 5) [0..((lens!!1)-1)]
     -- Try each password from these
     pwds = makePwds tops
     pts = fmap (\pwd -> decipher (AutokeyCipher pwd)  ct) pwds
@@ -43,7 +44,7 @@ combine = sequence
 
 
 makePwds :: [String] -> [String]
-makePwds topCharss = combine topCharss
+makePwds = combine
 
 
 topChars :: String -> Int -> Int -> Int -> String

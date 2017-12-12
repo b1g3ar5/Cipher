@@ -40,6 +40,7 @@ import Analysis
 import Cribs
 import Cipher
 import Vignere
+import Transposition
 --import Mod (matFromList, Mat(..), Mod(..), type (/)())
 
 
